@@ -1,1 +1,50 @@
 // app global css
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #64748B; /* Slate 500 - Fondo oscuro pero sin ser dark mode */
+}
+
+h1, h2, h3, h4, h5, h6, .text-h1, .text-h2, .text-h3, .text-h4, .text-h5, .text-h6 {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  color: #0F172A; /* Gris muy oscuro casi negro */
+}
+
+/* Rediseño de Tarjetas */
+.q-card {
+  border-radius: 16px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+  border: none !important;
+}
+
+/* Rediseño de Botones */
+.q-btn {
+  border-radius: 12px !important;
+  transition: all 0.3s ease;
+}
+
+.q-btn.bg-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 96, 100, 0.3);
+}
+
+.q-btn.bg-accent:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(255, 171, 145, 0.4);
+}
+
+/* Rediseño de Inputs */
+.q-field--outlined .q-field__control {
+  border-radius: 12px !important;
+}
+
+.q-field--outlined.q-field--focused .q-field__control:before {
+  border-color: $primary !important;
+  border-width: 2px !important;
+}
+
+/* Elementos adicionales */
+.q-chip {
+  border-radius: 8px !important;
+}

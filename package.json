@@ -2,7 +2,7 @@
   "name": "frontend",
   "version": "0.0.1",
   "description": "A Quasar Project",
-  "productName": "Quasar App",
+  "productName": "Dr. Sobrevilla - Dermatólogo Certificado",
   "author": "Robbie Escamilla (Computadora Xis) <rescamillamtz@gmail.com>",
   "type": "module",
   "private": true,
@@ -12,8 +12,12 @@
     "postinstall": "quasar prepare --silent"
   },
   "dependencies": {
-    "pinia": "^4.0.2",
     "@quasar/extras": "^2.0.0",
+    "axios": "^1.19.0",
+    "date-fns": "^4.4.0",
+    "laravel-echo": "^2.4.0",
+    "pinia": "^4.0.2",
+    "pusher-js": "^8.6.0",
     "quasar": "^2.23.5",
     "vue": "^3.5.22",
     "vue-router": "^5.0.6"
