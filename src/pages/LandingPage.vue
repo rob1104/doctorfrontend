@@ -52,21 +52,21 @@
           class="shadow-4 rounded-borders"
         >
           <q-carousel-slide name="clinica" img-src="/derma_clinica.jpg">
-            <div class="absolute-bottom custom-caption bg-dark-glass text-white q-pa-lg">
+            <div class="absolute-bottom custom-caption text-white q-pa-lg">
               <div class="text-h3 text-weight-bold q-mb-sm">Dermatología Clínica</div>
               <div class="text-h6 text-weight-regular">Diagnóstico preciso y tratamientos médicos efectivos para afecciones cutáneas. Recupera la salud de tu piel.</div>
             </div>
           </q-carousel-slide>
           
           <q-carousel-slide name="estetica" img-src="/derma_estetica.jpg">
-            <div class="absolute-bottom custom-caption bg-dark-glass text-white q-pa-lg">
+            <div class="absolute-bottom custom-caption text-white q-pa-lg">
               <div class="text-h3 text-weight-bold q-mb-sm">Estética y Rejuvenecimiento</div>
               <div class="text-h6 text-weight-regular">Realza tu belleza natural con procedimientos seguros y mínimamente invasivos. Tecnología para resaltar tu mejor versión.</div>
             </div>
           </q-carousel-slide>
 
           <q-carousel-slide name="prevencion" img-src="/derma_prevencion.jpg">
-            <div class="absolute-bottom custom-caption bg-dark-glass text-white q-pa-lg">
+            <div class="absolute-bottom custom-caption text-white q-pa-lg">
               <div class="text-h3 text-weight-bold q-mb-sm">Cáncer de Piel y Prevención</div>
               <div class="text-h6 text-weight-regular">El cuidado oportuno salva vidas. Realiza tu chequeo dermatológico anual preventivo y mantén tu piel libre de riesgos.</div>
             </div>
@@ -565,12 +565,7 @@ const verifyOtpAndBook = async () => {
 .custom-caption {
   text-align: center;
   padding: 24px;
-  background-color: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(6px);
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
-}
-.bg-dark-glass {
-  background-color: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(10px);
+  background-color: transparent;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9), 0 4px 20px rgba(0, 0, 0, 0.7);
 }
 </style>
