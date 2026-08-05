@@ -565,11 +565,12 @@ const verifyOtpAndBook = async () => {
 .custom-caption {
   text-align: center;
   padding: 24px;
-  background-color: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(4px);
+  background-color: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(6px);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
 }
 .bg-dark-glass {
-  background-color: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(8px);
+  background-color: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(10px);
 }
 </style>
