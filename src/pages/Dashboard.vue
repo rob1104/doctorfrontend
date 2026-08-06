@@ -18,35 +18,46 @@
 
     <!-- Stats Row -->
     <div class="row q-col-gutter-md q-mb-xl">
-      <div class="col-12 col-md-4">
+      <div class="col-12 col-sm-6 col-md-3">
         <q-card class="kpi-card shadow-1" flat>
           <q-card-section class="row items-center">
-            <q-avatar size="60px" color="blue-1" text-color="blue-8" icon="calendar_today" class="q-mr-md" />
+            <q-avatar size="50px" color="blue-1" text-color="blue-8" icon="calendar_today" class="q-mr-md" />
             <div>
-              <div class="text-overline text-grey-6 text-weight-bold">CITAS (HOY)</div>
+              <div class="text-overline text-grey-6 text-weight-bold" style="line-height: 1.2;">CITAS (HOY)</div>
               <div class="text-h4 text-weight-bold text-dark">{{ todayCount }}</div>
             </div>
           </q-card-section>
         </q-card>
       </div>
-      <div class="col-12 col-md-4">
+      <div class="col-12 col-sm-6 col-md-3">
         <q-card class="kpi-card shadow-1" flat>
           <q-card-section class="row items-center">
-            <q-avatar size="60px" color="amber-1" text-color="amber-8" icon="pending_actions" class="q-mr-md" />
+            <q-avatar size="50px" color="amber-1" text-color="amber-8" icon="pending_actions" class="q-mr-md" />
             <div>
-              <div class="text-overline text-grey-6 text-weight-bold">PENDIENTES</div>
+              <div class="text-overline text-grey-6 text-weight-bold" style="line-height: 1.2;">PENDIENTES</div>
               <div class="text-h4 text-weight-bold text-dark">{{ pendingCount }}</div>
             </div>
           </q-card-section>
         </q-card>
       </div>
-      <div class="col-12 col-md-4">
+      <div class="col-12 col-sm-6 col-md-3">
         <q-card class="kpi-card shadow-1" flat>
           <q-card-section class="row items-center">
-            <q-avatar size="60px" color="green-1" text-color="green-8" icon="verified" class="q-mr-md" />
+            <q-avatar size="50px" color="green-1" text-color="green-8" icon="verified" class="q-mr-md" />
             <div>
-              <div class="text-overline text-grey-6 text-weight-bold">APROBADAS</div>
+              <div class="text-overline text-grey-6 text-weight-bold" style="line-height: 1.2;">APROBADAS</div>
               <div class="text-h4 text-weight-bold text-dark">{{ approvedCount }}</div>
+            </div>
+          </q-card-section>
+        </q-card>
+      </div>
+      <div class="col-12 col-sm-6 col-md-3">
+        <q-card class="kpi-card shadow-1" flat>
+          <q-card-section class="row items-center">
+            <q-avatar size="50px" color="red-1" text-color="red-8" icon="cancel" class="q-mr-md" />
+            <div>
+              <div class="text-overline text-grey-6 text-weight-bold" style="line-height: 1.2;">CANCELADAS</div>
+              <div class="text-h4 text-weight-bold text-dark">{{ canceledCount }}</div>
             </div>
           </q-card-section>
         </q-card>
@@ -622,6 +633,7 @@ const todayCount = computed(() => {
 })
 const pendingCount = computed(() => appointments.value.filter(a => a.status === 'pending').length)
 const approvedCount = computed(() => appointments.value.filter(a => a.status === 'approved').length)
+const canceledCount = computed(() => appointments.value.filter(a => a.status === 'canceled').length)
 
 // UI Helpers
 const getAvatarColor = (name) => {
