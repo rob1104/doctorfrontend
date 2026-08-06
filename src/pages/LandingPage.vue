@@ -1,6 +1,6 @@
 <template>
   <q-page class="landing-page">
-    
+
     <!-- Hero Section -->
     <section class="hero-section window-height flex flex-center relative-position">
       <div class="row full-width max-width-container q-px-md items-center">
@@ -53,22 +53,22 @@
         >
           <q-carousel-slide name="clinica" img-src="/derma_clinica.jpg">
             <div class="absolute-bottom custom-caption text-white q-pa-lg">
-              <div class="text-h3 text-weight-bold q-mb-sm">Dermatología Clínica</div>
-              <div class="text-h6 text-weight-regular">Diagnóstico preciso y tratamientos médicos efectivos para afecciones cutáneas. Recupera la salud de tu piel.</div>
+              <div class="text-h3 text-white text-weight-bold q-mb-sm">Dermatología Clínica</div>
+              <div class="text-h6 text-white text-weight-regular">Diagnóstico preciso y tratamientos médicos efectivos para afecciones cutáneas. Recupera la salud de tu piel.</div>
             </div>
           </q-carousel-slide>
-          
+
           <q-carousel-slide name="estetica" img-src="/derma_estetica.jpg">
             <div class="absolute-bottom custom-caption text-white q-pa-lg">
-              <div class="text-h3 text-weight-bold q-mb-sm">Estética y Rejuvenecimiento</div>
-              <div class="text-h6 text-weight-regular">Realza tu belleza natural con procedimientos seguros y mínimamente invasivos. Tecnología para resaltar tu mejor versión.</div>
+              <div class="text-h3 text-white text-weight-bold q-mb-sm">Estética y Rejuvenecimiento</div>
+              <div class="text-h6 text-white text-weight-regular">Realza tu belleza natural con procedimientos seguros y mínimamente invasivos. Tecnología para resaltar tu mejor versión.</div>
             </div>
           </q-carousel-slide>
 
           <q-carousel-slide name="prevencion" img-src="/derma_prevencion.jpg">
             <div class="absolute-bottom custom-caption text-white q-pa-lg">
-              <div class="text-h3 text-weight-bold q-mb-sm">Cáncer de Piel y Prevención</div>
-              <div class="text-h6 text-weight-regular">El cuidado oportuno salva vidas. Realiza tu chequeo dermatológico anual preventivo y mantén tu piel libre de riesgos.</div>
+              <div class="text-h3 text-white text-weight-bold q-mb-sm">Cáncer de Piel y Prevención</div>
+              <div class="text-h6 text-white text-weight-regular">El cuidado oportuno salva vidas. Realiza tu chequeo dermatológico anual preventivo y mantén tu piel libre de riesgos.</div>
             </div>
           </q-carousel-slide>
         </q-carousel>
@@ -104,7 +104,7 @@
     <!-- Sección Interactiva: Agendar Cita -->
     <section id="seccion-agendar" class="agenda-section q-py-xl bg-grey-1 flex flex-center">
       <div class="max-width-container full-width q-px-md">
-        
+
         <div class="text-center q-mb-xl">
           <h2 class="text-h3 text-dark text-weight-bold q-mb-sm">Agenda tu Cita</h2>
           <p class="text-subtitle1 text-grey-7">Selecciona el día y horario que mejor te convenga.</p>
@@ -142,12 +142,12 @@
 
                   <div class="col-12 col-md-6">
                     <div class="text-h6 q-mb-lg text-dark">Horarios Disponibles</div>
-                    
+
                     <transition mode="out-in" enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
                       <div v-if="loadingSlots" class="flex flex-center q-pa-xl" key="loading">
                         <q-spinner-puff color="primary" size="3em" />
                       </div>
-                      
+
                       <div v-else-if="!booking.date" class="text-grey-6 text-center q-pa-lg" key="empty">
                         <q-icon name="event" size="48px" class="q-mb-md opacity-50" />
                         <div class="text-body1">Selecciona una fecha en el calendario.</div>
@@ -157,7 +157,7 @@
                         <q-icon name="event_busy" size="48px" class="q-mb-md opacity-50" />
                         <div class="text-body1">Día sin disponibilidad. Por favor elige otra fecha.</div>
                       </div>
-                      
+
                       <div v-else class="row q-col-gutter-md" key="slots">
                         <div class="col-6 col-sm-4" v-for="slot in availableSlots" :key="slot">
                           <q-btn
@@ -174,7 +174,7 @@
                     </transition>
                   </div>
                 </div>
-                
+
                 <div class="row justify-end q-mt-xl">
                   <q-btn
                     @click="step = 2"
@@ -301,14 +301,14 @@
         </q-card-section>
 
         <q-card-section>
-          <q-input 
-            outlined 
-            v-model="otpCode" 
-            label="Código de Verificación" 
-            mask="######" 
+          <q-input
+            outlined
+            v-model="otpCode"
+            label="Código de Verificación"
+            mask="######"
             unmasked-value
-            autofocus 
-            class="text-h6 text-center" 
+            autofocus
+            class="text-h6 text-center"
             @keyup.enter="verifyOtpAndBook"
           />
         </q-card-section>
@@ -367,17 +367,17 @@ const dateOptions = (dateStr) => {
   const date = new Date(dateStr)
   const today = new Date()
   today.setHours(0, 0, 0, 0)
-  
+
   if (date < today) return false
   return date.getDay() !== 0
 }
 
 const fetchAvailability = async (date) => {
   if (!date) return
-  
+
   loadingSlots.value = true
   booking.time = ''
-  
+
   try {
     const response = await api.get('/availability', {
       params: { date }
@@ -401,7 +401,7 @@ const requestOtp = async () => {
   submitting.value = true
   try {
     const response = await api.post('/otp/send', { phone: booking.phone })
-    
+
     $q.notify({ color: 'positive', message: response.data.message || 'Código enviado a tu WhatsApp.', position: 'top' })
     otpCode.value = ''
     showOtpDialog.value = true
@@ -439,7 +439,7 @@ const verifyOtpAndBook = async () => {
     }
 
     await api.post('/appointments', payload)
-    
+
     $q.notify({
       color: 'positive',
       message: '¡Cita agendada exitosamente!',
@@ -452,7 +452,7 @@ const verifyOtpAndBook = async () => {
     Object.keys(booking).forEach(key => booking[key] = '')
     booking.type = 'clinico'
     step.value = 1
-    
+
   } catch (error) {
     console.error('Error verificando cita:', error)
     $q.notify({

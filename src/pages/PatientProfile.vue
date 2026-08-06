@@ -259,47 +259,56 @@
               <!-- Lista scrolleable -->
               <q-scroll-area v-else style="height: 600px;" class="bg-grey-1 q-pa-md">
                 <div class="row q-col-gutter-md q-pb-xl">
-                  <div class="col-12 col-md-6" v-for="consultation in filteredConsultations" :key="consultation.id">
-                    <q-card flat bordered class="shadow-1" style="border-radius: 12px; height: 100%; display: flex; flex-direction: column; background-color: #fff;">
-                      <q-card-section class="bg-primary text-white q-py-sm row justify-between items-center" style="border-top-left-radius: 12px; border-top-right-radius: 12px;">
-                        <div class="text-subtitle2"><q-icon name="event" class="q-mr-xs"/> {{ formatDate(consultation.created_at) }}</div>
-                        <div>
-                          <q-chip v-if="consultation.prescription" dense color="white" text-color="primary" icon="local_pharmacy" size="sm">Receta</q-chip>
-                          <q-chip v-if="consultation.is_finished" dense color="grey-3" text-color="grey-8" icon="lock" size="sm">Terminada</q-chip>
-                        </div>
-                      </q-card-section>
-                      <q-separator />
-                      <q-card-section class="col q-pt-md">
-                        <div class="text-subtitle2 text-dark q-mb-xs text-weight-bold">Diagnóstico</div>
-                        <div class="text-caption text-grey-8 ellipsis-3-lines q-mb-md">{{ consultation.diagnosis || 'Consulta General' }}</div>
+                  <div class="col-12" v-for="consultation in filteredConsultations" :key="consultation.id">
+                    <q-card flat bordered class="shadow-1 overflow-hidden" :style="{ borderRadius: '12px', borderLeft: consultation.is_finished ? '6px solid #9e9e9e' : '6px solid #ffb300' }">
+                      <div class="row">
+                        <!-- Lado izquierdo: Info Clínica -->
+                        <div class="col-12 col-md-7 q-pa-md">
+                          <div class="row items-center justify-between q-mb-sm">
+                            <div class="text-subtitle1 text-weight-bold text-primary">
+                              <q-icon name="event" class="q-mr-xs"/> {{ formatDate(consultation.created_at) }}
+                            </div>
+                            <div>
+                              <q-chip v-if="consultation.is_finished" dense color="grey-3" text-color="grey-8" icon="lock" size="sm" class="q-ma-none text-weight-medium">Terminada</q-chip>
+                              <q-chip v-else dense color="amber-2" text-color="amber-9" icon="pending_actions" size="sm" class="q-ma-none text-weight-medium">En Progreso</q-chip>
+                            </div>
+                          </div>
+                          
+                          <div class="q-mb-md">
+                            <div class="text-subtitle2 text-dark text-weight-bold">Diagnóstico Clínico</div>
+                            <div class="text-body2 text-grey-9">{{ consultation.diagnosis || 'Consulta General (Sin especificar)' }}</div>
+                          </div>
 
-                        <div v-if="consultation.reason">
-                          <div class="text-subtitle2 text-dark q-mb-xs text-weight-bold">Motivo</div>
-                          <div class="text-caption text-grey-8 ellipsis-2-lines">{{ consultation.reason }}</div>
+                          <div v-if="consultation.reason">
+                            <div class="text-subtitle2 text-dark text-weight-bold">Motivo de la visita</div>
+                            <div class="text-body2 text-grey-8">{{ consultation.reason }}</div>
+                          </div>
                         </div>
-                      </q-card-section>
-                      <q-separator />
-                      <q-card-actions class="bg-blue-grey-1 row justify-between q-pa-sm" style="border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;">
-                        <div>
-                          <q-btn flat color="secondary" icon="visibility" size="sm" @click="openConsultation(consultation)">
-                            <q-tooltip>Ver Detalles</q-tooltip>
-                          </q-btn>
-                          <q-btn v-if="!consultation.is_finished" flat color="amber-9" icon="edit" size="sm" @click="editConsultation(consultation)">
-                            <q-tooltip>Editar Consulta</q-tooltip>
-                          </q-btn>
-                          <q-btn v-if="!consultation.is_finished" flat color="positive" icon="check_circle" size="sm" @click="confirmFinish(consultation)">
-                            <q-tooltip>Terminar Consulta</q-tooltip>
-                          </q-btn>
+
+                        <!-- Lado derecho: Acciones y Documentos -->
+                        <div class="col-12 col-md-5 bg-grey-1 q-pa-md flex column justify-between" style="border-left: 1px solid #eee;">
+                          
+                          <!-- Bloque de Documentos -->
+                          <div class="q-mb-md">
+                            <div class="text-caption text-grey-6 text-uppercase text-weight-bold q-mb-sm">Impresión de Documentos</div>
+                            <div class="row q-gutter-sm">
+                              <q-btn outline no-caps color="primary" icon="print" label="Expediente (PDF)" size="sm" class="col" @click="viewConsultationPdf(consultation.id)" />
+                              <q-btn v-if="consultation.prescription" outline no-caps color="deep-orange" icon="receipt_long" label="Receta (PDF)" size="sm" class="col" @click="viewPrescription(consultation.prescription.id)" />
+                            </div>
+                          </div>
+
+                          <!-- Bloque de Gestión -->
+                          <div>
+                            <div class="text-caption text-grey-6 text-uppercase text-weight-bold q-mb-sm">Gestión de Consulta</div>
+                            <div class="row q-gutter-sm">
+                              <q-btn flat no-caps color="secondary" icon="visibility" label="Ver Detalles" size="sm" class="col bg-blue-grey-1" @click="openConsultation(consultation)" />
+                              <q-btn v-if="!consultation.is_finished" flat no-caps color="amber-9" icon="edit" label="Editar" size="sm" class="col bg-amber-1" @click="editConsultation(consultation)" />
+                              <q-btn v-if="!consultation.is_finished" unelevated no-caps color="positive" icon="check_circle" label="Terminar" size="sm" class="col" @click="confirmFinish(consultation)" />
+                            </div>
+                          </div>
+
                         </div>
-                        <div>
-                          <q-btn flat color="primary" icon="description" size="sm" @click="viewConsultationPdf(consultation.id)">
-                            <q-tooltip>Resumen Clínico (PDF)</q-tooltip>
-                          </q-btn>
-                          <q-btn v-if="consultation.prescription" flat color="deep-orange" icon="local_pharmacy" size="sm" @click="viewPrescription(consultation.prescription.id)">
-                            <q-tooltip>Receta (PDF)</q-tooltip>
-                          </q-btn>
-                        </div>
-                      </q-card-actions>
+                      </div>
                     </q-card>
                   </div>
                 </div>
