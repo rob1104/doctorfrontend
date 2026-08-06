@@ -2,7 +2,7 @@
   <q-page class="bg-grey-1 q-pa-lg">
     <div class="row items-center justify-between q-mb-md">
       <div>
-        <q-btn flat icon="arrow_back" color="primary" label="Volver al Dashboard" to="/admin/dashboard" class="q-mr-sm" />
+        <q-btn flat icon="arrow_back" color="primary" label="Volver a Pacientes" to="/admin/patients" class="q-mr-sm" />
         <div class="text-h4 text-dark text-weight-bold q-mt-sm">Expediente Clínico</div>
       </div>
       <div>
@@ -27,13 +27,21 @@
       <!-- Lado Izquierdo: Datos del Paciente -->
       <div class="col-12 col-md-4">
         <q-card class="shadow-2 profile-card" flat>
-          <q-card-section class="text-center bg-white text-dark q-pb-xl border-bottom-primary">
-            <q-avatar size="100px" color="primary" text-color="white" class="shadow-3 q-mb-md font-weight-bold" style="font-size: 3rem; margin-top: 20px;">
-              {{ patient.first_name.charAt(0) }}{{ patient.last_name.charAt(0) }}
-            </q-avatar>
-            <div class="text-h5 text-weight-bold">{{ patient.first_name }} {{ patient.last_name }}</div>
-            <div class="text-subtitle2 text-grey-8">{{ patient.phone }}</div>
-            <div class="text-caption text-grey-7">{{ patient.email || 'Sin correo' }}</div>
+          <q-card-section class="text-center bg-teal-7 text-white q-pb-lg" style="border-top-left-radius: 4px; border-top-right-radius: 4px;">
+            <div class="flex flex-center q-mb-md" style="margin-top: 20px;">
+              <q-avatar size="100px" class="shadow-3">
+                <img :src="getAvatarUrl(patient.gender)" />
+              </q-avatar>
+            </div>
+            <div class="text-h5 text-grey-2 text-weight-bold" style="line-height: 1.2;">{{ patient.first_name }}</div>
+            <div class="text-h5 text-grey-2 text-weight-bold q-mb-md" style="line-height: 1.2;">{{ patient.last_name }}</div>
+
+            <div class="text-subtitle2 flex flex-center q-mb-xs">
+              <q-icon name="phone" size="16px" class="q-mr-sm" /> {{ formatPhoneNumber(patient.phone) }}
+            </div>
+            <div class="text-body2 flex flex-center" style="opacity: 0.85;">
+              <q-icon name="email" size="16px" class="q-mr-sm" /> {{ patient.email || 'Sin correo' }}
+            </div>
           </q-card-section>
 
           <q-card-section class="q-pa-md">
@@ -166,8 +174,15 @@
                 <q-item>
                   <q-item-section avatar><q-icon name="home" color="indigo-5" /></q-item-section>
                   <q-item-section>
-                    <q-item-label caption>Dirección</q-item-label>
-                    <q-item-label>{{ patient.address || 'No especificada' }}</q-item-label>
+                    <q-item-label caption>Dirección Completa</q-item-label>
+                    <q-item-label>{{ formatFullAddress(patient) }}</q-item-label>
+                  </q-item-section>
+                </q-item>
+                <q-item v-if="patient.place_of_birth">
+                  <q-item-section avatar><q-icon name="public" color="blue-5" /></q-item-section>
+                  <q-item-section>
+                    <q-item-label caption>Lugar de Origen</q-item-label>
+                    <q-item-label>{{ patient.place_of_birth }}</q-item-label>
                   </q-item-section>
                 </q-item>
                 <q-item>
@@ -220,7 +235,7 @@
                       <q-icon name="close" @click="consultationSearch = ''" class="cursor-pointer" size="xs" />
                     </template>
                   </q-input>
-                  
+
                   <q-input :model-value="dateRangeText" dense outlined placeholder="Filtrar por fecha" readonly style="width: 250px" bg-color="white">
                     <template v-slot:prepend>
                       <q-icon name="event" class="cursor-pointer">
@@ -260,55 +275,64 @@
               <q-scroll-area v-else style="height: 600px;" class="bg-grey-1 q-pa-md">
                 <div class="row q-col-gutter-md q-pb-xl">
                   <div class="col-12" v-for="consultation in filteredConsultations" :key="consultation.id">
-                    <q-card flat bordered class="shadow-1 overflow-hidden" :style="{ borderRadius: '12px', borderLeft: consultation.is_finished ? '6px solid #9e9e9e' : '6px solid #ffb300' }">
-                      <div class="row">
-                        <!-- Lado izquierdo: Info Clínica -->
-                        <div class="col-12 col-md-7 q-pa-md">
-                          <div class="row items-center justify-between q-mb-sm">
-                            <div class="text-subtitle1 text-weight-bold text-primary">
-                              <q-icon name="event" class="q-mr-xs"/> {{ formatDate(consultation.created_at) }}
-                            </div>
-                            <div>
-                              <q-chip v-if="consultation.is_finished" dense color="grey-3" text-color="grey-8" icon="lock" size="sm" class="q-ma-none text-weight-medium">Terminada</q-chip>
-                              <q-chip v-else dense color="amber-2" text-color="amber-9" icon="pending_actions" size="sm" class="q-ma-none text-weight-medium">En Progreso</q-chip>
-                            </div>
+                    <q-card flat bordered class="q-mb-md shadow-2 transition-ease" :style="{ backgroundColor: '#ECFAE5', borderRadius: '12px', borderLeft: consultation.is_finished ? '6px solid #4caf50' : '6px solid #ff9800' }">
+                      <q-card-section class="q-pa-md">
+                        <!-- HEADER: Fecha y Status -->
+                        <div class="row items-center justify-between q-mb-md">
+                          <div class="text-subtitle1 text-weight-bold text-dark row items-center">
+                            <q-icon name="event_note" color="primary" class="q-mr-sm" size="sm" />
+                            {{ formatDate(consultation.created_at) }}
                           </div>
-                          
-                          <div class="q-mb-md">
-                            <div class="text-subtitle2 text-dark text-weight-bold">Diagnóstico Clínico</div>
-                            <div class="text-body2 text-grey-9">{{ consultation.diagnosis || 'Consulta General (Sin especificar)' }}</div>
-                          </div>
+                          <div class="row q-gutter-sm">
+                            <!-- Estatus Médico (Labels) -->
+                            <q-badge v-if="consultation.is_finished" color="green-1" text-color="green-8" class="text-weight-bold text-uppercase q-pa-xs shadow-1" style="border-radius: 4px;"><q-icon name="check_circle" size="xs" class="q-mr-xs"/> Completada</q-badge>
+                            <q-badge v-else color="orange-1" text-color="orange-9" class="text-weight-bold text-uppercase q-pa-xs shadow-1" style="border-radius: 4px;"><q-icon name="pending_actions" size="xs" class="q-mr-xs"/> En Progreso</q-badge>
 
-                          <div v-if="consultation.reason">
-                            <div class="text-subtitle2 text-dark text-weight-bold">Motivo de la visita</div>
-                            <div class="text-body2 text-grey-8">{{ consultation.reason }}</div>
+                            <!-- Estatus de Pago (Labels) -->
+                            <q-badge v-if="consultation.payments && consultation.payments.length > 0" color="blue-1" text-color="blue-8" class="text-weight-bold text-uppercase q-pa-xs shadow-1" style="border-radius: 4px;"><q-icon name="payments" size="xs" class="q-mr-xs"/> Pagada</q-badge>
+                            <q-badge v-else color="grey-2" text-color="grey-7" class="text-weight-bold text-uppercase q-pa-xs shadow-1" style="border-radius: 4px;"><q-icon name="money_off" size="xs" class="q-mr-xs"/> Pago Pendiente</q-badge>
                           </div>
                         </div>
 
-                        <!-- Lado derecho: Acciones y Documentos -->
-                        <div class="col-12 col-md-5 bg-grey-1 q-pa-md flex column justify-between" style="border-left: 1px solid #eee;">
-                          
-                          <!-- Bloque de Documentos -->
-                          <div class="q-mb-md">
-                            <div class="text-caption text-grey-6 text-uppercase text-weight-bold q-mb-sm">Impresión de Documentos</div>
-                            <div class="row q-gutter-sm">
-                              <q-btn outline no-caps color="primary" icon="print" label="Expediente (PDF)" size="sm" class="col" @click="viewConsultationPdf(consultation.id)" />
-                              <q-btn v-if="consultation.prescription" outline no-caps color="deep-orange" icon="receipt_long" label="Receta (PDF)" size="sm" class="col" @click="viewPrescription(consultation.prescription.id)" />
+                        <q-separator color="grey-3" class="q-mb-md" />
+
+                        <!-- BODY: Resumen Clínico -->
+                        <div class="row q-col-gutter-md q-mb-md">
+                          <div class="col-12 col-md-7">
+                            <div class="text-caption text-grey-6 text-uppercase text-weight-bold">Diagnóstico Clínico</div>
+                            <div class="text-body2 text-dark text-weight-medium q-mb-sm">{{ consultation.diagnosis || 'Consulta General (Sin especificar)' }}</div>
+
+                            <div v-if="consultation.reason">
+                              <div class="text-caption text-grey-6 text-uppercase text-weight-bold">Motivo de Visita</div>
+                              <div class="text-body2 text-grey-8 text-truncate" style="max-height: 40px; overflow: hidden;">{{ consultation.reason }}</div>
                             </div>
                           </div>
 
-                          <!-- Bloque de Gestión -->
-                          <div>
-                            <div class="text-caption text-grey-6 text-uppercase text-weight-bold q-mb-sm">Gestión de Consulta</div>
-                            <div class="row q-gutter-sm">
-                              <q-btn flat no-caps color="secondary" icon="visibility" label="Ver Detalles" size="sm" class="col bg-blue-grey-1" @click="openConsultation(consultation)" />
-                              <q-btn v-if="!consultation.is_finished" flat no-caps color="amber-9" icon="edit" label="Editar" size="sm" class="col bg-amber-1" @click="editConsultation(consultation)" />
-                              <q-btn v-if="!consultation.is_finished" unelevated no-caps color="positive" icon="check_circle" label="Terminar" size="sm" class="col" @click="confirmFinish(consultation)" />
-                            </div>
+                          <div class="col-12 col-md-5">
+                             <div class="text-caption text-grey-6 text-uppercase text-weight-bold q-mb-xs">Signos Vitales Rápidos</div>
+                             <div class="row q-gutter-xs">
+                               <div v-if="consultation.blood_pressure" class="bg-grey-1 text-dark text-caption q-px-sm q-py-xs shadow-1 text-weight-medium" style="border-radius: 6px; border: 1px solid #e0e0e0;">PA: {{ consultation.blood_pressure }}</div>
+                               <div v-if="consultation.heart_rate" class="bg-grey-1 text-dark text-caption q-px-sm q-py-xs shadow-1 text-weight-medium" style="border-radius: 6px; border: 1px solid #e0e0e0;">FC: {{ consultation.heart_rate }}</div>
+                               <div v-if="consultation.weight" class="bg-grey-1 text-dark text-caption q-px-sm q-py-xs shadow-1 text-weight-medium" style="border-radius: 6px; border: 1px solid #e0e0e0;">Peso: {{ consultation.weight }} kg</div>
+                               <span v-if="!consultation.blood_pressure && !consultation.heart_rate && !consultation.weight" class="text-grey-5 italic text-caption">No registrados</span>
+                             </div>
                           </div>
-
                         </div>
-                      </div>
+
+                        <!-- FOOTER: Acciones (Botones Claros) -->
+                        <div class="row items-center q-gutter-sm bg-grey-1 q-pa-sm" style="border-radius: 8px;">
+                          <!-- Botones de Documentos -->
+                          <q-btn unelevated no-caps color="blue-1" text-color="primary" icon="print" label="Expediente" size="sm" class="text-weight-bold" @click="viewConsultationPdf(consultation.id)" />
+                          <q-btn v-if="consultation.prescription" outline no-caps color="deep-orange" icon="receipt_long" label="Receta" size="sm" class="text-weight-bold bg-white" @click="viewPrescription(consultation.prescription.id)" />
+
+                          <q-space />
+
+                          <!-- Botones de Gestión -->
+                          <q-btn unelevated no-caps color="indigo-5" text-color="white" icon="visibility" label="Detalles" size="sm" class="text-weight-bold shadow-1" @click="openConsultation(consultation)" />
+                          <q-btn v-if="!consultation.is_finished" unelevated no-caps color="orange-6" text-color="white" icon="edit" label="Editar" size="sm" class="text-weight-bold shadow-1" @click="editConsultation(consultation)" />
+                          <q-btn v-if="!consultation.is_finished" unelevated no-caps color="positive" text-color="white" icon="check_circle" label="Completar" size="sm" class="text-weight-bold shadow-1" @click="confirmFinish(consultation)" />
+                        </div>
+                      </q-card-section>
                     </q-card>
                   </div>
                 </div>
@@ -336,7 +360,7 @@
     <!-- Dialogo para Ver Consulta (Solo Lectura - Rediseñado) -->
     <q-dialog v-model="viewConsultationDialog" persistent transition-show="scale" transition-hide="scale">
       <q-card style="width: 900px; max-width: 95vw; border-radius: 16px; background-color: #f8f9fa;">
-        
+
         <!-- Header Elegante -->
         <q-card-section class="row items-center q-pb-md q-pt-md q-px-lg bg-dark text-white" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
           <div>
@@ -348,12 +372,12 @@
         </q-card-section>
 
         <q-card-section class="scroll q-pa-lg" style="max-height: 80vh;" v-if="selectedConsultation">
-          
+
           <div class="row q-col-gutter-lg">
-            
+
             <!-- Columna Izquierda: Clínica principal -->
             <div class="col-12 col-md-7">
-              
+
               <!-- Diagnóstico y Motivo -->
               <div class="bg-white q-pa-md shadow-1 q-mb-md" style="border-radius: 8px; border-left: 4px solid #37474f;">
                 <div class="row items-center q-mb-sm">
@@ -361,9 +385,9 @@
                   <div class="text-subtitle1 text-blue-grey-9 text-weight-bold">Diagnóstico Clínico</div>
                 </div>
                 <div class="text-body1 text-dark q-pl-lg q-mb-md">{{ selectedConsultation.diagnosis || 'Sin especificar' }}</div>
-                
+
                 <q-separator class="q-my-sm" />
-                
+
                 <div class="row items-center q-mb-sm q-mt-md">
                   <q-icon name="chat_bubble_outline" color="blue-grey-8" size="sm" class="q-mr-sm"/>
                   <div class="text-subtitle2 text-blue-grey-9 text-weight-bold">Motivo de Consulta</div>
@@ -384,11 +408,11 @@
 
             <!-- Columna Derecha: Signos Vitales y Receta -->
             <div class="col-12 col-md-5">
-              
+
               <!-- Signos Vitales (Grid Minimalista) -->
               <div class="bg-white q-pa-md shadow-1 q-mb-md" style="border-radius: 8px; border: 1px solid #eceff1;">
                 <div class="text-caption text-uppercase text-weight-bold text-blue-grey-6 q-mb-md">Signos Vitales y Medidas</div>
-                
+
                 <div class="row q-col-gutter-sm">
                   <div class="col-6">
                     <div class="bg-grey-1 q-pa-sm text-center" style="border-radius: 6px;">
@@ -435,7 +459,7 @@
                   <div class="text-caption text-uppercase text-weight-bold text-blue-grey-6">Receta Extendida</div>
                   <q-icon name="receipt_long" color="blue-grey-4" size="sm" />
                 </div>
-                
+
                 <q-list dense separator class="text-body2">
                   <q-item v-for="(med, idx) in selectedConsultation.prescription.medications" :key="idx" class="q-pa-none q-py-xs">
                     <q-item-section>
@@ -450,7 +474,7 @@
                   <div class="text-caption text-grey-8">{{ selectedConsultation.prescription.instructions }}</div>
                 </div>
               </div>
-              
+
               <div v-else class="bg-white q-pa-md shadow-1 text-center" style="border-radius: 8px; border: 1px dashed #cfd8dc;">
                 <q-icon name="medication" size="md" color="grey-4" class="q-mb-sm" />
                 <div class="text-caption text-grey-6">Sin receta registrada en esta consulta</div>
@@ -459,9 +483,9 @@
             </div>
           </div>
         </q-card-section>
-        
+
         <q-separator />
-        
+
         <q-card-actions align="right" class="q-pa-md bg-white">
           <q-btn flat label="Cerrar Detalles" color="blue-grey-8" v-close-popup class="text-weight-bold" />
         </q-card-actions>
@@ -594,9 +618,29 @@
                       <template v-slot:prepend><q-icon name="work" size="xs" color="teal-5" /></template>
                     </q-input>
                   </div>
-                  <div class="col-12">
-                    <q-input v-model="clinicalForm.address" type="textarea" label="Dirección Completa" outlined dense autogrow>
+                  <div class="col-12 col-md-6">
+                    <q-input v-model="clinicalForm.address" label="Dirección (Calle y número)" outlined dense>
                       <template v-slot:prepend><q-icon name="place" size="xs" color="teal-5" /></template>
+                    </q-input>
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <q-input v-model="clinicalForm.neighborhood" label="Colonia" outlined dense />
+                  </div>
+                  <div class="col-12 col-md-4">
+                    <q-input v-model="clinicalForm.zip_code" label="Código Postal" outlined dense />
+                  </div>
+                  <div class="col-12 col-md-8">
+                    <q-input v-model="clinicalForm.city" label="Ciudad" outlined dense />
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <q-select v-model="clinicalForm.country" :options="['México', 'Estados Unidos']" label="País" outlined dense emit-value map-options @update:model-value="clinicalForm.state = ''" />
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <q-select v-model="clinicalForm.state" :options="stateOptions" label="Estado" outlined dense emit-value map-options :disable="!clinicalForm.country" />
+                  </div>
+                  <div class="col-12">
+                    <q-input v-model="clinicalForm.place_of_birth" label="Lugar de Origen" outlined dense>
+                      <template v-slot:prepend><q-icon name="public" size="xs" color="teal-5" /></template>
                     </q-input>
                   </div>
                   <div class="col-12 text-subtitle2 text-grey-8 q-mb-none q-mt-md">Contacto de Emergencia</div>
@@ -662,9 +706,57 @@ import { es } from 'date-fns/locale'
 import ConsultationDialog from '../components/ConsultationDialog.vue'
 import PatientDocumentsTab from '../components/PatientDocumentsTab.vue'
 
+const getAvatarUrl = (gender) => {
+  const f = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23f48fb1'/><path d='M22 100 Q 22 70 50 70 Q 78 70 78 100' fill='%23d81b60'/><rect x='42' y='50' width='16' height='25' fill='%23ffcc80'/><ellipse cx='50' cy='42' rx='17' ry='23' fill='%23ffcc80'/><path d='M 50 8 C 20 8, 20 45, 20 70 C 20 95, 35 95, 35 70 C 35 45, 45 35, 50 30 C 55 35, 65 45, 65 70 C 65 95, 80 95, 80 70 C 80 45, 80 8, 50 8 Z' fill='%232c3e50'/></svg>";
+  const m = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%234fc3f7'/><path d='M18 100 Q 18 65 50 65 Q 82 65 82 100' fill='%2334495e'/><rect x='40' y='50' width='20' height='20' fill='%23ffcc80'/><ellipse cx='50' cy='40' rx='19' ry='24' fill='%23ffcc80'/><path d='M28 40 Q 28 10 50 10 Q 72 10 72 40 Q 72 50 65 45 Q 50 25 35 45 Q 28 50 28 40 Z' fill='%232c3e50'/></svg>";
+  const n = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23e0e0e0'/><path d='M20 100 Q 20 65 50 65 Q 80 65 80 100' fill='%239e9e9e'/><rect x='40' y='50' width='20' height='20' fill='%23f5f5f5'/><ellipse cx='50' cy='40' rx='20' ry='25' fill='%23f5f5f5'/></svg>";
+  if (gender === 'Femenino' || gender === 'Mujer') return f;
+  if (gender === 'Masculino' || gender === 'Hombre') return m;
+  return n;
+}
+
 const $q = useQuasar()
 const route = useRoute()
 const patientId = route.params.id
+
+const mexicoStates = [
+  'Aguascalientes', 'Baja California', 'Baja California Sur', 'Campeche', 'Chiapas', 'Chihuahua',
+  'Ciudad de México', 'Coahuila', 'Colima', 'Durango', 'Estado de México', 'Guanajuato', 'Guerrero',
+  'Hidalgo', 'Jalisco', 'Michoacán', 'Morelos', 'Nayarit', 'Nuevo León', 'Oaxaca', 'Puebla',
+  'Querétaro', 'Quintana Roo', 'San Luis Potosí', 'Sinaloa', 'Sonora', 'Tabasco', 'Tamaulipas',
+  'Tlaxcala', 'Veracruz', 'Yucatán', 'Zacatecas'
+]
+
+const usStates = [
+  'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware',
+  'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky',
+  'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi',
+  'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico',
+  'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania',
+  'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont',
+  'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming'
+]
+
+const formatFullAddress = (p) => {
+  if (!p) return 'No especificada'
+  const parts = [
+    p.address,
+    p.neighborhood ? `Col. ${p.neighborhood}` : null,
+    p.city,
+    p.state,
+    p.country,
+    p.zip_code ? `C.P. ${p.zip_code}` : null
+  ].filter(Boolean)
+  return parts.length > 0 ? parts.join(', ') : 'No especificada'
+}
+
+const formatPhoneNumber = (phoneStr) => {
+  if (!phoneStr) return ''
+  const cleaned = ('' + phoneStr).replace(/\D/g, '')
+  const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/)
+  if (match) return `(${match[1]}) ${match[2]}-${match[3]}`
+  return phoneStr
+}
 
 const patient = ref(null)
 const loading = ref(true)
@@ -684,12 +776,12 @@ const dateRangeText = computed(() => {
 
 const filteredConsultations = computed(() => {
   if (!patient.value || !patient.value.consultations) return []
-  
+
   let filtered = patient.value.consultations
 
   if (consultationSearch.value) {
     const term = consultationSearch.value.toLowerCase()
-    filtered = filtered.filter(c => 
+    filtered = filtered.filter(c =>
       (c.diagnosis && c.diagnosis.toLowerCase().includes(term)) ||
       (c.reason && c.reason.toLowerCase().includes(term))
     )
@@ -737,6 +829,12 @@ const clinicalForm = ref({
   gender: '',
   date_of_birth: '',
   address: '',
+  neighborhood: '',
+  zip_code: '',
+  city: '',
+  state: '',
+  country: 'México',
+  place_of_birth: '',
   emergency_contact_name: '',
   emergency_contact_phone: '',
   marital_status: '',
@@ -749,6 +847,12 @@ const clinicalForm = ref({
   skincare_routine: '',
   non_pathological_history: '',
   gyneco_obstetric_history: ''
+})
+
+const stateOptions = computed(() => {
+  if (clinicalForm.value.country === 'México') return mexicoStates
+  if (clinicalForm.value.country === 'Estados Unidos') return usStates
+  return []
 })
 
 const fetchPatient = async () => {
@@ -765,6 +869,12 @@ const fetchPatient = async () => {
       gender: data.gender || '',
       date_of_birth: data.date_of_birth || '',
       address: data.address || '',
+      neighborhood: data.neighborhood || '',
+      zip_code: data.zip_code || '',
+      city: data.city || '',
+      state: data.state || '',
+      country: data.country || 'México',
+      place_of_birth: data.place_of_birth || '',
       emergency_contact_name: data.emergency_contact_name || '',
       emergency_contact_phone: data.emergency_contact_phone || '',
       marital_status: data.marital_status || '',

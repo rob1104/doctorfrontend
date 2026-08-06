@@ -80,7 +80,41 @@
               <div v-if="issuePrescription" class="q-mt-md">
                 <div v-for="(med, index) in medications" :key="index" class="row q-col-gutter-sm items-center q-mb-sm bg-blue-grey-1 q-pa-sm" style="border-radius: 8px;">
                   <div class="col-4">
-                    <q-input v-model="med.name" label="Medicamento / Sustancia" outlined dense bg-color="white" />
+                    <q-select
+                      :ref="(el) => { if (el) medSelectRefs[index] = el }"
+                      v-model="med.medication"
+                      label="Medicamento / Sustancia"
+                      outlined
+                      dense
+                      bg-color="white"
+                      use-input
+                      fill-input
+                      hide-selected
+                      clearable
+                      input-debounce="300"
+                      :options="medicationOptions"
+                      option-label="generic_name"
+                      @filter="filterMedications"
+                      @new-value="createMedicationValue"
+                    >
+                      <template v-slot:option="scope">
+                        <q-item v-bind="scope.itemProps">
+                          <q-item-section>
+                            <q-item-label>{{ scope.opt.generic_name }}</q-item-label>
+                            <q-item-label caption v-if="scope.opt.commercial_name || scope.opt.presentation">
+                              {{ scope.opt.commercial_name }} {{ scope.opt.presentation }}
+                            </q-item-label>
+                          </q-item-section>
+                        </q-item>
+                      </template>
+                      <template v-slot:no-option>
+                        <q-item>
+                          <q-item-section class="text-italic text-grey">
+                            No se encontró el medicamento. Puede escribirlo y será agregado al catálogo automáticamente.
+                          </q-item-section>
+                        </q-item>
+                      </template>
+                    </q-select>
                   </div>
                   <div class="col-7">
                     <q-input v-model="med.instructions" label="Dosis e Indicaciones" outlined dense bg-color="white" />
@@ -110,10 +144,48 @@
       </q-card-actions>
     </q-card>
   </q-dialog>
+
+  <!-- Nuevo Medicamento Dialog -->
+  <q-dialog v-model="isNewMedicationDialogOpen" persistent>
+    <q-card style="width: 500px; max-width: 90vw; border-radius: 12px;">
+      <q-card-section class="bg-primary text-white row items-center q-pb-sm">
+        <div class="text-h6">Nuevo Medicamento</div>
+        <q-space />
+        <q-btn icon="close" flat round dense v-close-popup />
+      </q-card-section>
+      
+      <q-card-section class="q-pt-md">
+        <div class="text-subtitle2 q-mb-md text-grey-8">
+          Por favor captura los detalles para registrar este medicamento en el catálogo.
+        </div>
+        <q-form @submit.prevent="saveNewMedication" class="row q-col-gutter-md">
+          <div class="col-12">
+            <q-input v-model="newMedicationForm.generic_name" label="Sustancia Activa *" outlined dense :rules="[val => !!val || 'Requerido']" autofocus />
+          </div>
+          <div class="col-12 col-md-6">
+            <q-input v-model="newMedicationForm.commercial_name" label="Nombre Comercial" outlined dense />
+          </div>
+          <div class="col-12 col-md-6">
+            <q-input v-model="newMedicationForm.presentation" label="Presentación (ej. Tabletas)" outlined dense />
+          </div>
+          <div class="col-12 col-md-6">
+            <q-input v-model="newMedicationForm.concentration" label="Concentración / Gramaje *" outlined dense :rules="[val => !!val || 'Requerido']" />
+          </div>
+          <div class="col-12 col-md-6">
+            <q-input v-model="newMedicationForm.route" label="Vía de administración *" outlined dense :rules="[val => !!val || 'Requerido']" />
+          </div>
+          <div class="col-12 text-right q-mt-md">
+            <q-btn flat label="Cancelar" color="grey-8" v-close-popup />
+            <q-btn type="submit" unelevated color="primary" label="Guardar y Seleccionar" :loading="savingMedication" />
+          </div>
+        </q-form>
+      </q-card-section>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script setup>
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, nextTick } from 'vue'
 import { api } from '../boot/axios'
 import { useQuasar } from 'quasar'
 
@@ -151,20 +223,41 @@ const form = ref({
 
 // Prescription state
 const issuePrescription = ref(false)
-const medications = ref([{ name: '', instructions: '' }])
+const medications = ref([{ medication: null, instructions: '' }])
 const prescriptionInstructions = ref('')
+const medicationOptions = ref([])
+const medSelectRefs = ref([])
 
-const addMedication = () => {
-  medications.value.push({ name: '', instructions: '' })
+// New Medication Dialog State
+const isNewMedicationDialogOpen = ref(false)
+const savingMedication = ref(false)
+const newMedicationDoneCallback = ref(null)
+const newMedicationForm = ref({
+  generic_name: '',
+  commercial_name: '',
+  presentation: '',
+  concentration: '',
+  route: '',
+  active_substance: ''
+})
+
+const addMedication = async () => {
+  medications.value.push({ medication: null, instructions: '' })
+  await nextTick()
+  if (medSelectRefs.value && medSelectRefs.value[medications.value.length - 1]) {
+    medSelectRefs.value[medications.value.length - 1].focus()
+  }
 }
 const removeMedication = (index) => {
   medications.value.splice(index, 1)
+  medSelectRefs.value.splice(index, 1)
 }
 
 const reset = () => {
   form.value = { reason: '', physical_exam: '', diagnosis: '', treatment_plan: '', notes: '', blood_pressure: '', temperature: null, heart_rate: null, respiratory_rate: null, weight: null, height: null }
   issuePrescription.value = false
-  medications.value = [{ name: '', instructions: '' }]
+  medications.value = [{ medication: null, instructions: '' }]
+  medSelectRefs.value = []
   prescriptionInstructions.value = ''
 }
 
@@ -186,12 +279,15 @@ const loadData = () => {
     if (props.editData.prescription) {
       issuePrescription.value = true
       medications.value = props.editData.prescription.medications && props.editData.prescription.medications.length
-        ? JSON.parse(JSON.stringify(props.editData.prescription.medications))
-        : [{ name: '', instructions: '' }]
+        ? props.editData.prescription.medications.map(m => ({
+            medication: { generic_name: m.name, id: m.medication_id },
+            instructions: m.instructions
+          }))
+        : [{ medication: null, instructions: '' }]
       prescriptionInstructions.value = props.editData.prescription.instructions || ''
     } else {
       issuePrescription.value = false
-      medications.value = [{ name: '', instructions: '' }]
+      medications.value = [{ medication: null, instructions: '' }]
       prescriptionInstructions.value = ''
     }
   } else {
@@ -203,6 +299,15 @@ watch(isOpen, (val) => {
   if (val) loadData()
 })
 
+watch(issuePrescription, async (val) => {
+  if (val) {
+    await nextTick()
+    if (medSelectRefs.value && medSelectRefs.value[0]) {
+      medSelectRefs.value[0].focus()
+    }
+  }
+})
+
 const save = async () => {
   saving.value = true
   try {
@@ -211,7 +316,10 @@ const save = async () => {
       const payload = {
         ...form.value,
         issue_prescription: issuePrescription.value,
-        medications: issuePrescription.value ? medications.value.filter(m => m.name.trim() !== '') : [],
+        medications: issuePrescription.value ? medications.value.filter(m => {
+          const name = m.medication?.generic_name || m.medication
+          return name && name.trim() !== ''
+        }) : [],
         prescription_instructions: issuePrescription.value ? prescriptionInstructions.value : ''
       }
       await api.put(`/consultations/${props.editData.id}`, payload)
@@ -225,7 +333,10 @@ const save = async () => {
       const { data: consultation } = await api.post('/consultations', payload)
 
       if (issuePrescription.value) {
-        const validMeds = medications.value.filter(m => m.name.trim() !== '')
+        const validMeds = medications.value.filter(m => {
+          const name = m.medication?.generic_name || m.medication
+          return name && name.trim() !== ''
+        })
         if (validMeds.length > 0 || prescriptionInstructions.value.trim() !== '') {
           await api.post('/prescriptions', {
             consultation_id: consultation.id,
@@ -246,6 +357,54 @@ const save = async () => {
     $q.notify({ color: 'negative', message: 'Hubo un error al registrar la consulta' })
   } finally {
     saving.value = false
+  }
+}
+
+const filterMedications = async (val, update, abort) => {
+  if (val.length < 2) {
+    abort()
+    return
+  }
+  try {
+    const { data } = await api.get('/medications', { params: { search: val } })
+    update(() => {
+      medicationOptions.value = data
+    })
+  } catch (error) {
+    console.error('Error fetching medications:', error)
+    abort()
+  }
+}
+
+const createMedicationValue = (val, done) => {
+  if (val.length > 0) {
+    newMedicationForm.value = {
+      generic_name: val,
+      active_substance: val,
+      commercial_name: '',
+      presentation: '',
+      concentration: '',
+      route: ''
+    }
+    newMedicationDoneCallback.value = done
+    isNewMedicationDialogOpen.value = true
+  }
+}
+
+const saveNewMedication = async () => {
+  savingMedication.value = true
+  try {
+    const { data } = await api.post('/medications', newMedicationForm.value)
+    if (newMedicationDoneCallback.value) {
+      newMedicationDoneCallback.value(data, 'add-unique')
+    }
+    isNewMedicationDialogOpen.value = false
+    $q.notify({ color: 'positive', icon: 'check_circle', message: 'Medicamento guardado en el catálogo' })
+  } catch (error) {
+    console.error(error)
+    $q.notify({ color: 'negative', message: 'Revisa los campos requeridos' })
+  } finally {
+    savingMedication.value = false
   }
 }
 </script>

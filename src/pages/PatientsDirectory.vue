@@ -36,6 +36,7 @@
           row-key="id"
           flat
           :filter="filter"
+          :filter-method="customFilter"
           :loading="loading"
           class="bg-transparent premium-table"
           :rows-per-page-options="[10, 25, 50]"
@@ -48,11 +49,11 @@
           <template v-slot:body-cell-name="props">
             <q-td :props="props">
               <div class="row items-center no-wrap">
-                <q-avatar size="48px" :color="getAvatarColor(props.row.first_name)" text-color="white" class="q-mr-md font-weight-bold shadow-1">
-                  {{ props.row.first_name.charAt(0) }}{{ props.row.last_name.charAt(0) }}
+                <q-avatar size="48px" class="q-mr-md shadow-1">
+                  <img :src="getAvatarUrl(props.row.gender)" />
                 </q-avatar>
                 <div>
-                  <div class="text-weight-bold text-dark" style="font-size: 15px;">{{ props.row.first_name }} {{ props.row.last_name }}</div>
+                  <div class="text-weight-bold text-primary" style="font-size: 15px; letter-spacing: 0.3px;">{{ props.row.first_name }} {{ props.row.last_name }}</div>
                   <div class="text-caption text-grey-7 row items-center">
                     <q-icon name="phone" size="12px" class="q-mr-xs" /> {{ props.row.phone }}
                   </div>
@@ -61,12 +62,25 @@
             </q-td>
           </template>
 
+          <template v-slot:body-cell-age="props">
+            <q-td :props="props">
+              <q-chip v-if="getAge(props.row.date_of_birth) !== 'N/E'" dense color="indigo-1" text-color="indigo-8" class="text-weight-bold q-px-sm" style="font-size: 13px;">
+                {{ getAge(props.row.date_of_birth) }}
+              </q-chip>
+              <span v-else class="text-grey-5 italic text-caption">N/E</span>
+            </q-td>
+          </template>
+
           <template v-slot:body-cell-contact="props">
             <q-td :props="props">
-              <div v-if="props.row.email" class="text-dark">{{ props.row.email }}</div>
-              <div v-else class="text-grey-5 italic">Sin correo</div>
-              <div class="text-caption text-grey-6 text-truncate" style="max-width: 200px;">
-                {{ props.row.address || 'Sin dirección' }}
+              <div class="row items-center no-wrap q-mb-xs">
+                <q-icon name="email" size="14px" class="q-mr-xs text-grey-6" />
+                <div v-if="props.row.email" class="text-dark">{{ props.row.email }}</div>
+                <div v-else class="text-grey-5 italic">Sin correo</div>
+              </div>
+              <div class="text-caption text-grey-6 text-truncate row items-center" style="max-width: 200px;">
+                <q-icon name="place" size="14px" class="q-mr-xs text-grey-5" />
+                {{ [props.row.city, props.row.state].filter(Boolean).join(', ') || 'Ubicación no especificada' }}
               </div>
             </q-td>
           </template>
@@ -89,6 +103,17 @@
                 <q-icon name="bloodtype" size="14px" class="q-mr-xs" />
                 {{ props.row.blood_type }}
               </q-chip>
+            </q-td>
+          </template>
+
+          <template v-slot:body-cell-diagnosis="props">
+            <q-td :props="props">
+              <div class="text-dark text-weight-medium text-truncate" style="max-width: 180px;">
+                {{ props.row.consultations && props.row.consultations.length > 0 ? (props.row.consultations[0].diagnosis || 'Sin especificar') : 'Sin consultas' }}
+              </div>
+              <div v-if="props.row.consultations && props.row.consultations.length > 0" class="text-caption text-grey-6">
+                {{ formatDateNatural(props.row.consultations[0].created_at) }}
+              </div>
             </q-td>
           </template>
 
@@ -180,9 +205,29 @@
                       <template v-slot:prepend><q-icon name="email" size="xs" color="grey-6" /></template>
                     </q-input>
                   </div>
-                  <div class="col-12">
-                    <q-input v-model="form.address" type="textarea" label="Dirección Completa" outlined dense autogrow>
+                  <div class="col-12 col-md-6">
+                    <q-input v-model="form.address" label="Dirección (Calle y número)" outlined dense>
                       <template v-slot:prepend><q-icon name="place" size="xs" color="grey-6" /></template>
+                    </q-input>
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <q-input v-model="form.neighborhood" label="Colonia" outlined dense />
+                  </div>
+                  <div class="col-12 col-md-4">
+                    <q-input v-model="form.zip_code" label="Código Postal" outlined dense />
+                  </div>
+                  <div class="col-12 col-md-8">
+                    <q-input v-model="form.city" label="Ciudad" outlined dense />
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <q-select v-model="form.country" :options="['México', 'Estados Unidos']" label="País" outlined dense emit-value map-options @update:model-value="form.state = ''" />
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <q-select v-model="form.state" :options="stateOptions" label="Estado" outlined dense emit-value map-options :disable="!form.country" />
+                  </div>
+                  <div class="col-12">
+                    <q-input v-model="form.place_of_birth" label="Lugar de Origen" outlined dense>
+                      <template v-slot:prepend><q-icon name="public" size="xs" color="grey-6" /></template>
                     </q-input>
                   </div>
                 </div>
@@ -338,11 +383,29 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { api } from '../boot/axios'
 import { useQuasar } from 'quasar'
-import { formatDistanceToNow, parseISO, format } from 'date-fns'
+import { formatDistanceToNow, parseISO, format, differenceInYears } from 'date-fns'
 import { es } from 'date-fns/locale'
+
+const mexicoStates = [
+  'Aguascalientes', 'Baja California', 'Baja California Sur', 'Campeche', 'Chiapas', 'Chihuahua', 
+  'Ciudad de México', 'Coahuila', 'Colima', 'Durango', 'Estado de México', 'Guanajuato', 'Guerrero', 
+  'Hidalgo', 'Jalisco', 'Michoacán', 'Morelos', 'Nayarit', 'Nuevo León', 'Oaxaca', 'Puebla', 
+  'Querétaro', 'Quintana Roo', 'San Luis Potosí', 'Sinaloa', 'Sonora', 'Tabasco', 'Tamaulipas', 
+  'Tlaxcala', 'Veracruz', 'Yucatán', 'Zacatecas'
+]
+
+const usStates = [
+  'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 
+  'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 
+  'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 
+  'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 
+  'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 
+  'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 
+  'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming'
+]
 
 const $q = useQuasar()
 const patients = ref([])
@@ -366,7 +429,8 @@ const appointmentForm = ref({
 
 const getBaseForm = () => ({
   id: null,
-  first_name: '', last_name: '', phone: '', email: '', address: '',
+  first_name: '', last_name: '', phone: '', email: '', 
+  address: '', neighborhood: '', zip_code: '', city: '', state: '', country: 'México', place_of_birth: '',
   date_of_birth: '', gender: '', marital_status: '', occupation: '',
   emergency_contact_name: '', emergency_contact_phone: '',
   blood_type: '', allergies: '', chronic_conditions: '', current_medications: '',
@@ -377,18 +441,61 @@ const getBaseForm = () => ({
 
 const form = ref(getBaseForm())
 
+const stateOptions = computed(() => {
+  if (form.value.country === 'México') return mexicoStates
+  if (form.value.country === 'Estados Unidos') return usStates
+  return []
+})
+
 const columns = [
   { name: 'name', align: 'left', label: 'Paciente', sortable: true },
-  { name: 'contact', align: 'left', label: 'Contacto', field: 'email', sortable: false },
+  { name: 'age', align: 'left', label: 'Edad', sortable: true },
+  { name: 'contact', align: 'left', label: 'Contacto y Ubicación', field: 'email', sortable: false },
   { name: 'clinical', align: 'left', label: 'Perfil', field: 'gender', sortable: false },
+  { name: 'diagnosis', align: 'left', label: 'Últ. Diagnóstico', sortable: false },
   { name: 'created_at', align: 'left', label: 'Registro', field: 'created_at', sortable: true },
   { name: 'actions', align: 'right', label: '', field: 'actions' }
 ]
 
-const getAvatarColor = (name) => {
-  const colors = ['primary', 'secondary', 'accent', 'cyan-8', 'indigo-6', 'teal-6', 'purple-5']
-  const charCode = name ? name.charCodeAt(0) : 0
-  return colors[charCode % colors.length]
+const customFilter = (rows, terms) => {
+  const lowerTerms = terms ? terms.toLowerCase() : ''
+  if (!lowerTerms) return rows
+
+  return rows.filter(row => {
+    const name = `${row.first_name || ''} ${row.last_name || ''}`.toLowerCase()
+    const phone = (row.phone || '').toLowerCase()
+    const email = (row.email || '').toLowerCase()
+    const ageStr = row.date_of_birth ? differenceInYears(new Date(), parseISO(row.date_of_birth)).toString() : ''
+    const diagnosis = (row.consultations && row.consultations.length > 0) ? (row.consultations[0].diagnosis || '').toLowerCase() : ''
+    const city = (row.city || '').toLowerCase()
+    const state = (row.state || '').toLowerCase()
+
+    return name.includes(lowerTerms) || 
+           phone.includes(lowerTerms) || 
+           email.includes(lowerTerms) ||
+           ageStr.includes(lowerTerms) ||
+           diagnosis.includes(lowerTerms) ||
+           city.includes(lowerTerms) ||
+           state.includes(lowerTerms)
+  })
+}
+
+const getAge = (dateOfBirth) => {
+  if (!dateOfBirth) return 'N/E'
+  try {
+    return differenceInYears(new Date(), parseISO(dateOfBirth)).toString()
+  } catch (e) {
+    return 'N/E'
+  }
+}
+
+const getAvatarUrl = (gender) => {
+  const f = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23f48fb1'/><path d='M22 100 Q 22 70 50 70 Q 78 70 78 100' fill='%23d81b60'/><rect x='42' y='50' width='16' height='25' fill='%23ffcc80'/><ellipse cx='50' cy='42' rx='17' ry='23' fill='%23ffcc80'/><path d='M 50 8 C 20 8, 20 45, 20 70 C 20 95, 35 95, 35 70 C 35 45, 45 35, 50 30 C 55 35, 65 45, 65 70 C 65 95, 80 95, 80 70 C 80 45, 80 8, 50 8 Z' fill='%232c3e50'/></svg>";
+  const m = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%234fc3f7'/><path d='M18 100 Q 18 65 50 65 Q 82 65 82 100' fill='%2334495e'/><rect x='40' y='50' width='20' height='20' fill='%23ffcc80'/><ellipse cx='50' cy='40' rx='19' ry='24' fill='%23ffcc80'/><path d='M28 40 Q 28 10 50 10 Q 72 10 72 40 Q 72 50 65 45 Q 50 25 35 45 Q 28 50 28 40 Z' fill='%232c3e50'/></svg>";
+  const n = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23e0e0e0'/><path d='M20 100 Q 20 65 50 65 Q 80 65 80 100' fill='%239e9e9e'/><rect x='40' y='50' width='20' height='20' fill='%23f5f5f5'/><ellipse cx='50' cy='40' rx='20' ry='25' fill='%23f5f5f5'/></svg>";
+  if (gender === 'Femenino' || gender === 'Mujer') return f;
+  if (gender === 'Masculino' || gender === 'Hombre') return m;
+  return n;
 }
 
 const formatDateNatural = (dateString) => {
