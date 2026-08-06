@@ -16,6 +16,7 @@ const routes = [
   {
     path: '/admin',
     component: () => import('../layouts/AdminLayout.vue'),
+    redirect: '/admin/dashboard',
     meta: { requiresAuth: true },
     children: [
       { path: 'dashboard', component: () => import('../pages/Dashboard.vue') },

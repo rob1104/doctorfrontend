@@ -177,7 +177,7 @@
 
                 <div class="row justify-end q-mt-xl">
                   <q-btn
-                    @click="step = 2"
+                    @click="goToStep2"
                     color="primary"
                     label="Siguiente Paso"
                     icon-right="arrow_forward"
@@ -201,6 +201,7 @@
                     <div class="row q-col-gutter-lg">
                       <div class="col-12 col-md-6">
                         <q-input
+                          ref="nameInput"
                           outlined
                           v-model="booking.first_name"
                           label="Nombre(s) *"
@@ -324,13 +325,24 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, nextTick } from 'vue'
 import { useQuasar } from 'quasar'
 import { api } from '../boot/axios'
 
 const $q = useQuasar()
 const step = ref(1)
 const carouselSlide = ref('clinica')
+
+const nameInput = ref(null)
+
+const goToStep2 = () => {
+  step.value = 2
+  nextTick(() => {
+    if (nameInput.value) {
+      nameInput.value.focus()
+    }
+  })
+}
 
 const scrollToAgenda = () => {
   const el = document.getElementById('seccion-agendar')

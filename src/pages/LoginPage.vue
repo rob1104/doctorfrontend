@@ -15,6 +15,7 @@
             <q-form @submit="onSubmit" class="q-gutter-md">
               <q-input
                 outlined
+                autofocus
                 v-model="email"
                 type="email"
                 label="Correo Electrónico"
