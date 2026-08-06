@@ -333,33 +333,137 @@
       @saved="fetchPatient"
     />
 
-    <!-- Dialogo para Ver Consulta (Solo Lectura) -->
+    <!-- Dialogo para Ver Consulta (Solo Lectura - Rediseñado) -->
     <q-dialog v-model="viewConsultationDialog" persistent transition-show="scale" transition-hide="scale">
-      <q-card style="width: 800px; max-width: 95vw; border-radius: 16px;">
-        <q-card-section class="row items-center q-pb-md q-pt-md q-px-lg bg-primary text-white shadow-2" style="z-index: 10;">
+      <q-card style="width: 900px; max-width: 95vw; border-radius: 16px; background-color: #f8f9fa;">
+        
+        <!-- Header Elegante -->
+        <q-card-section class="row items-center q-pb-md q-pt-md q-px-lg bg-dark text-white" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
           <div>
-            <div class="text-h5 text-white text-weight-bold">Detalle de Consulta</div>
-            <div class="text-subtitle2 text-white opacity-80">{{ selectedConsultation ? formatDate(selectedConsultation.created_at) : '' }}</div>
+            <div class="text-h5 text-white text-weight-bold" style="letter-spacing: 0.5px;">Resumen Clínico</div>
+            <div class="text-subtitle2 text-grey-4"><q-icon name="event" size="xs" class="q-mr-xs"/> {{ selectedConsultation ? formatDate(selectedConsultation.created_at) : '' }}</div>
           </div>
           <q-space />
-          <q-btn icon="close" flat round dense v-close-popup color="white" />
+          <q-btn icon="close" flat round dense v-close-popup color="grey-4" />
         </q-card-section>
 
-        <q-card-section class="scroll q-pa-lg" style="max-height: 75vh;" v-if="selectedConsultation">
-          <div class="q-gutter-y-md">
-            <div class="text-subtitle2 text-grey-8 text-weight-bold q-mb-sm">Motivo / Resumen</div>
-            <p>{{ selectedConsultation.reason || 'Sin registro' }}</p>
+        <q-card-section class="scroll q-pa-lg" style="max-height: 80vh;" v-if="selectedConsultation">
+          
+          <div class="row q-col-gutter-lg">
+            
+            <!-- Columna Izquierda: Clínica principal -->
+            <div class="col-12 col-md-7">
+              
+              <!-- Diagnóstico y Motivo -->
+              <div class="bg-white q-pa-md shadow-1 q-mb-md" style="border-radius: 8px; border-left: 4px solid #37474f;">
+                <div class="row items-center q-mb-sm">
+                  <q-icon name="health_and_safety" color="blue-grey-8" size="sm" class="q-mr-sm"/>
+                  <div class="text-subtitle1 text-blue-grey-9 text-weight-bold">Diagnóstico Clínico</div>
+                </div>
+                <div class="text-body1 text-dark q-pl-lg q-mb-md">{{ selectedConsultation.diagnosis || 'Sin especificar' }}</div>
+                
+                <q-separator class="q-my-sm" />
+                
+                <div class="row items-center q-mb-sm q-mt-md">
+                  <q-icon name="chat_bubble_outline" color="blue-grey-8" size="sm" class="q-mr-sm"/>
+                  <div class="text-subtitle2 text-blue-grey-9 text-weight-bold">Motivo de Consulta</div>
+                </div>
+                <div class="text-body2 text-grey-8 q-pl-lg">{{ selectedConsultation.reason || 'Sin especificar' }}</div>
+              </div>
 
-            <div class="text-subtitle2 text-grey-8 text-weight-bold q-mb-sm">Diagnóstico</div>
-            <p>{{ selectedConsultation.diagnosis || 'Sin registro' }}</p>
+              <!-- Plan de Tratamiento -->
+              <div class="bg-white q-pa-md shadow-1" style="border-radius: 8px; border-left: 4px solid #37474f;">
+                <div class="row items-center q-mb-sm">
+                  <q-icon name="healing" color="blue-grey-8" size="sm" class="q-mr-sm"/>
+                  <div class="text-subtitle1 text-blue-grey-9 text-weight-bold">Plan de Tratamiento</div>
+                </div>
+                <div class="text-body2 text-dark q-pl-lg" style="white-space: pre-line;">{{ selectedConsultation.treatment_plan || 'Sin especificaciones médicas' }}</div>
+              </div>
 
-            <div class="text-subtitle2 text-grey-8 text-weight-bold q-mb-sm">Plan de Tratamiento</div>
-            <p>{{ selectedConsultation.treatment_plan || 'Sin registro' }}</p>
+            </div>
+
+            <!-- Columna Derecha: Signos Vitales y Receta -->
+            <div class="col-12 col-md-5">
+              
+              <!-- Signos Vitales (Grid Minimalista) -->
+              <div class="bg-white q-pa-md shadow-1 q-mb-md" style="border-radius: 8px; border: 1px solid #eceff1;">
+                <div class="text-caption text-uppercase text-weight-bold text-blue-grey-6 q-mb-md">Signos Vitales y Medidas</div>
+                
+                <div class="row q-col-gutter-sm">
+                  <div class="col-6">
+                    <div class="bg-grey-1 q-pa-sm text-center" style="border-radius: 6px;">
+                      <div class="text-caption text-grey-7">Presión Art.</div>
+                      <div class="text-subtitle2 text-dark text-weight-bold">{{ selectedConsultation.blood_pressure || '--' }}</div>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="bg-grey-1 q-pa-sm text-center" style="border-radius: 6px;">
+                      <div class="text-caption text-grey-7">F. Cardiaca</div>
+                      <div class="text-subtitle2 text-dark text-weight-bold">{{ selectedConsultation.heart_rate ? selectedConsultation.heart_rate + ' lpm' : '--' }}</div>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="bg-grey-1 q-pa-sm text-center" style="border-radius: 6px;">
+                      <div class="text-caption text-grey-7">F. Respiratoria</div>
+                      <div class="text-subtitle2 text-dark text-weight-bold">{{ selectedConsultation.respiratory_rate ? selectedConsultation.respiratory_rate + ' rpm' : '--' }}</div>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="bg-grey-1 q-pa-sm text-center" style="border-radius: 6px;">
+                      <div class="text-caption text-grey-7">Temperatura</div>
+                      <div class="text-subtitle2 text-dark text-weight-bold">{{ selectedConsultation.temperature ? selectedConsultation.temperature + ' °C' : '--' }}</div>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="bg-grey-1 q-pa-sm text-center" style="border-radius: 6px;">
+                      <div class="text-caption text-grey-7">Peso</div>
+                      <div class="text-subtitle2 text-dark text-weight-bold">{{ selectedConsultation.weight ? selectedConsultation.weight + ' kg' : '--' }}</div>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="bg-grey-1 q-pa-sm text-center" style="border-radius: 6px;">
+                      <div class="text-caption text-grey-7">Talla</div>
+                      <div class="text-subtitle2 text-dark text-weight-bold">{{ selectedConsultation.height ? selectedConsultation.height + ' cm' : '--' }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Vista Previa de Receta (Estilo Ticket Sobrio) -->
+              <div v-if="selectedConsultation.prescription" class="bg-white q-pa-md shadow-1" style="border-radius: 8px; border: 1px solid #eceff1;">
+                <div class="row items-center justify-between q-mb-md">
+                  <div class="text-caption text-uppercase text-weight-bold text-blue-grey-6">Receta Extendida</div>
+                  <q-icon name="receipt_long" color="blue-grey-4" size="sm" />
+                </div>
+                
+                <q-list dense separator class="text-body2">
+                  <q-item v-for="(med, idx) in selectedConsultation.prescription.medications" :key="idx" class="q-pa-none q-py-xs">
+                    <q-item-section>
+                      <q-item-label class="text-weight-bold text-dark">• {{ med.name }}</q-item-label>
+                      <q-item-label caption class="text-grey-8 q-pl-sm">{{ med.instructions }}</q-item-label>
+                    </q-item-section>
+                  </q-item>
+                </q-list>
+
+                <div v-if="selectedConsultation.prescription.instructions" class="q-mt-md bg-grey-1 q-pa-sm" style="border-radius: 4px; border-left: 2px solid #9e9e9e;">
+                  <div class="text-caption text-weight-bold text-dark q-mb-xs">Instrucciones Generales</div>
+                  <div class="text-caption text-grey-8">{{ selectedConsultation.prescription.instructions }}</div>
+                </div>
+              </div>
+              
+              <div v-else class="bg-white q-pa-md shadow-1 text-center" style="border-radius: 8px; border: 1px dashed #cfd8dc;">
+                <q-icon name="medication" size="md" color="grey-4" class="q-mb-sm" />
+                <div class="text-caption text-grey-6">Sin receta registrada en esta consulta</div>
+              </div>
+
+            </div>
           </div>
         </q-card-section>
+        
         <q-separator />
-        <q-card-actions align="right" class="q-pa-md">
-          <q-btn flat label="Cerrar" color="primary" v-close-popup />
+        
+        <q-card-actions align="right" class="q-pa-md bg-white">
+          <q-btn flat label="Cerrar Detalles" color="blue-grey-8" v-close-popup class="text-weight-bold" />
         </q-card-actions>
       </q-card>
     </q-dialog>
