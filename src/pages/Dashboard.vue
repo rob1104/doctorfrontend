@@ -7,12 +7,31 @@
         <div class="text-h4 text-dark text-weight-bold">Control Clínico</div>
         <div class="text-subtitle1 text-grey-6 q-mt-xs">Monitoreo y Gestión de Citas Médicas</div>
       </div>
-      <div class="row items-center q-gutter-md">
-        <q-btn-group rounded class="shadow-1">
-          <q-btn :color="viewMode === 'table' ? 'primary' : 'white'" :text-color="viewMode === 'table' ? 'white' : 'grey-8'" label="Tabla" icon="table_chart" @click="viewMode = 'table'" />
-          <q-btn :color="viewMode === 'calendar' ? 'primary' : 'white'" :text-color="viewMode === 'calendar' ? 'white' : 'grey-8'" label="Calendario" icon="calendar_month" @click="viewMode = 'calendar'" />
-          <q-btn :color="viewMode === 'agenda' ? 'primary' : 'white'" :text-color="viewMode === 'agenda' ? 'white' : 'grey-8'" label="Agenda" icon="view_agenda" @click="viewMode = 'agenda'" />
-        </q-btn-group>
+      <div>
+        <q-btn color="primary" icon="add" label="Nueva Cita" @click="openNewAppointmentDialog" class="shadow-2" rounded unelevated />
+      </div>
+    </div>
+
+    <!-- Stats Header & Picker -->
+    <div class="row items-center justify-between q-mb-md">
+      <div class="text-h6 text-dark text-weight-bold">
+        Resumen de Citas
+        <q-chip color="primary" text-color="white" size="sm" class="q-ml-sm text-weight-bold shadow-1">
+          {{ kpiDateLabel }}
+        </q-chip>
+      </div>
+      
+      <div class="row items-center q-gutter-sm">
+        <q-btn flat color="primary" label="Hoy" size="sm" class="text-weight-bold" @click="resetKpiToToday" />
+        <q-btn outline color="primary" icon="date_range" label="Histórico" no-caps class="bg-white">
+          <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+            <q-date v-model="kpiDateRange" range mask="YYYY-MM-DD" color="primary">
+              <div class="row items-center justify-end">
+                <q-btn v-close-popup label="Aplicar Rango" color="primary" flat />
+              </div>
+            </q-date>
+          </q-popup-proxy>
+        </q-btn>
       </div>
     </div>
 
@@ -21,9 +40,9 @@
       <div class="col-12 col-sm-6 col-md-3">
         <q-card class="kpi-card shadow-1" flat>
           <q-card-section class="row items-center">
-            <q-avatar size="50px" color="blue-1" text-color="blue-8" icon="calendar_today" class="q-mr-md" />
+            <q-avatar size="50px" color="blue-1" text-color="blue-8" icon="event" class="q-mr-md" />
             <div>
-              <div class="text-overline text-grey-6 text-weight-bold" style="line-height: 1.2;">CITAS (HOY)</div>
+              <div class="text-overline text-grey-6 text-weight-bold" style="line-height: 1.2;">CITAS TOTALES</div>
               <div class="text-h4 text-weight-bold text-dark">{{ todayCount }}</div>
             </div>
           </q-card-section>
@@ -65,10 +84,17 @@
     </div>
 
     <!-- Table Section -->
-    <q-card class="dashboard-card shadow-2" flat>
+    <q-card class="dashboard-card shadow-2 q-mt-lg" flat>
       <q-card-section class="row items-center justify-between q-pb-none">
-        <div class="text-h6 text-weight-bold text-dark">
-          {{ viewMode === 'table' ? 'Citas (Tabla)' : (viewMode === 'calendar' ? 'Calendario Mensual' : 'Agenda Diaria') }}
+        <div class="row items-center">
+          <div class="text-h6 text-weight-bold text-dark q-mr-lg">
+            {{ viewMode === 'table' ? 'Citas (Tabla)' : (viewMode === 'calendar' ? 'Calendario Mensual' : 'Agenda Diaria') }}
+          </div>
+          <q-btn-group rounded class="shadow-1">
+            <q-btn :color="viewMode === 'table' ? 'primary' : 'white'" :text-color="viewMode === 'table' ? 'white' : 'grey-8'" label="Tabla" icon="table_chart" @click="viewMode = 'table'" />
+            <q-btn :color="viewMode === 'calendar' ? 'primary' : 'white'" :text-color="viewMode === 'calendar' ? 'white' : 'grey-8'" label="Calendario" icon="calendar_month" @click="viewMode = 'calendar'" />
+            <q-btn :color="viewMode === 'agenda' ? 'primary' : 'white'" :text-color="viewMode === 'agenda' ? 'white' : 'grey-8'" label="Agenda" icon="view_agenda" @click="viewMode = 'agenda'" />
+          </q-btn-group>
         </div>
         <q-input v-if="viewMode === 'table'" outlined dense v-model="filter" placeholder="Buscar paciente..." class="q-ml-md" style="min-width: 250px">
           <template v-slot:append>
@@ -434,6 +460,101 @@
       </q-card>
     </q-dialog>
 
+    <!-- Dialogo para Nueva Cita Manual -->
+    <q-dialog v-model="newAppointmentDialog" persistent>
+      <q-card style="width: 500px; max-width: 90vw; border-radius: 16px;">
+        <q-card-section class="bg-primary text-white row items-center justify-between">
+          <div class="text-h6">Registrar Nueva Cita</div>
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
+
+        <q-card-section class="q-pt-md">
+          <q-btn-toggle
+            v-model="newApptForm.is_existing_patient"
+            spread
+            no-caps
+            rounded
+            unelevated
+            toggle-color="primary"
+            color="white"
+            text-color="grey-8"
+            class="shadow-1 q-mb-md"
+            :options="[
+              {label: 'Paciente Existente', value: true},
+              {label: 'Nuevo Prospecto', value: false}
+            ]"
+          />
+
+          <div v-if="newApptForm.is_existing_patient" class="q-mb-md">
+            <q-select
+              v-model="newApptForm.patient_id"
+              :options="filteredPatientsList"
+              option-value="id"
+              :option-label="(item) => `${item.first_name} ${item.last_name} (${item.phone})`"
+              emit-value
+              map-options
+              use-input
+              @filter="filterPatients"
+              label="Buscar Paciente"
+              outlined
+              dense
+              :loading="loadingPatients"
+            >
+              <template v-slot:no-option>
+                <q-item>
+                  <q-item-section class="text-grey">
+                    No se encontraron pacientes
+                  </q-item-section>
+                </q-item>
+              </template>
+            </q-select>
+          </div>
+
+          <div v-else class="row q-col-gutter-sm q-mb-md">
+            <div class="col-12 col-sm-6">
+              <q-input v-model="newApptForm.first_name" label="Nombre" outlined dense />
+            </div>
+            <div class="col-12 col-sm-6">
+              <q-input v-model="newApptForm.last_name" label="Apellidos" outlined dense />
+            </div>
+            <div class="col-12">
+              <q-input v-model="newApptForm.phone" label="Teléfono (WhatsApp)" outlined dense mask="##########" />
+            </div>
+          </div>
+
+          <q-separator class="q-my-md" />
+
+          <div class="row q-col-gutter-sm">
+            <div class="col-6">
+              <q-input v-model="newApptForm.appointment_date" type="date" label="Fecha de Cita" outlined dense />
+            </div>
+            <div class="col-6">
+              <q-input v-model="newApptForm.start_time" type="time" label="Hora" outlined dense />
+            </div>
+            <div class="col-12">
+              <q-select
+                v-model="newApptForm.type"
+                :options="[{label: 'Consulta Clínica', value: 'clinico'}, {label: 'Consulta Estética', value: 'estetico'}]"
+                emit-value
+                map-options
+                label="Tipo de Consulta"
+                outlined
+                dense
+              />
+            </div>
+            <div class="col-12">
+              <q-input v-model="newApptForm.notes" type="textarea" label="Motivo de consulta / Notas" outlined dense autogrow rows="2" />
+            </div>
+          </div>
+        </q-card-section>
+
+        <q-card-actions align="right" class="q-pa-md">
+          <q-btn flat label="Cancelar" color="grey-8" v-close-popup />
+          <q-btn unelevated label="Registrar Cita Confirmada" color="primary" @click="submitNewAppointment" :loading="savingNewAppointment" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
   </q-page>
 </template>
 
@@ -536,6 +657,122 @@ const agendaAppointments = computed(() => {
 })
 
 // Cancel and Reschedule Logic
+const newAppointmentDialog = ref(false)
+const savingNewAppointment = ref(false)
+const loadingPatients = ref(false)
+const allPatientsList = ref([])
+const filteredPatientsList = ref([])
+
+const newApptForm = ref({
+  is_existing_patient: true,
+  patient_id: null,
+  first_name: '',
+  last_name: '',
+  phone: '',
+  appointment_date: getTodayString(),
+  start_time: '10:00',
+  type: 'clinico',
+  notes: ''
+})
+
+const openNewAppointmentDialog = async () => {
+  newApptForm.value = {
+    is_existing_patient: true,
+    patient_id: null,
+    first_name: '',
+    last_name: '',
+    phone: '',
+    appointment_date: getTodayString(),
+    start_time: '10:00',
+    type: 'clinico',
+    notes: ''
+  }
+  
+  if (allPatientsList.value.length === 0) {
+    loadingPatients.value = true
+    try {
+      const response = await api.get('/patients/all')
+      allPatientsList.value = response.data
+      filteredPatientsList.value = response.data
+    } catch (e) {
+      console.error(e)
+    } finally {
+      loadingPatients.value = false
+    }
+  }
+  
+  newAppointmentDialog.value = true
+}
+
+const filterPatients = (val, update) => {
+  if (val === '') {
+    update(() => {
+      filteredPatientsList.value = allPatientsList.value
+    })
+    return
+  }
+  update(() => {
+    const needle = val.toLowerCase()
+    filteredPatientsList.value = allPatientsList.value.filter(v => 
+      v.first_name.toLowerCase().includes(needle) || 
+      v.last_name.toLowerCase().includes(needle) ||
+      v.phone.includes(needle)
+    )
+  })
+}
+
+const submitNewAppointment = async () => {
+  // Validación básica
+  if (newApptForm.value.is_existing_patient && !newApptForm.value.patient_id) {
+    return $q.notify({ color: 'negative', message: 'Selecciona un paciente' })
+  }
+  if (!newApptForm.value.is_existing_patient) {
+    if (!newApptForm.value.first_name || !newApptForm.value.last_name || !newApptForm.value.phone) {
+      return $q.notify({ color: 'negative', message: 'Llena los datos del prospecto' })
+    }
+  }
+  if (!newApptForm.value.appointment_date || !newApptForm.value.start_time) {
+    return $q.notify({ color: 'negative', message: 'Selecciona fecha y hora' })
+  }
+
+  savingNewAppointment.value = true
+  try {
+    const payload = {
+      type: newApptForm.value.type,
+      appointment_date: newApptForm.value.appointment_date,
+      start_time: newApptForm.value.start_time,
+      notes: newApptForm.value.notes
+    }
+    
+    if (newApptForm.value.is_existing_patient) {
+      payload.patient_id = newApptForm.value.patient_id
+    } else {
+      payload.first_name = newApptForm.value.first_name
+      payload.last_name = newApptForm.value.last_name
+      payload.phone = newApptForm.value.phone
+    }
+
+    const response = await api.post('/appointments/admin', payload)
+    
+    // Add to local state
+    appointments.value.push(response.data.appointment)
+    
+    // Re-fetch all patients if a new prospect was created
+    if (!newApptForm.value.is_existing_patient) {
+      allPatientsList.value = [] // clear cache so it fetches next time
+    }
+
+    $q.notify({ color: 'positive', icon: 'check_circle', message: 'Cita registrada y confirmada' })
+    newAppointmentDialog.value = false
+  } catch (error) {
+    const msg = error.response?.data?.message || 'Error al guardar la cita'
+    $q.notify({ color: 'negative', message: msg })
+  } finally {
+    savingNewAppointment.value = false
+  }
+}
+
+// Cancel and Reschedule Logic
 const cancelDialog = ref(false)
 const appointmentToCancel = ref(null)
 const cancelReason = ref('')
@@ -626,14 +863,45 @@ const columns = [
   { name: 'actions', align: 'right', label: '', field: 'actions' }
 ]
 
-// Computed Stats
-const todayCount = computed(() => {
-  const today = new Date().toISOString().split('T')[0]
-  return appointments.value.filter(a => a.appointment_date === today).length
+// KPI State & Logic
+function getTodayString() {
+  const d = new Date()
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().split('T')[0]
+}
+
+const kpiDateRange = ref(getTodayString())
+
+const resetKpiToToday = () => {
+  kpiDateRange.value = getTodayString()
+}
+
+const kpiDateLabel = computed(() => {
+  if (!kpiDateRange.value) return 'Todo el Histórico'
+  if (typeof kpiDateRange.value === 'string') {
+    return kpiDateRange.value === getTodayString() ? 'Hoy' : formatDateNatural(kpiDateRange.value)
+  }
+  return `${formatDateNatural(kpiDateRange.value.from)} - ${formatDateNatural(kpiDateRange.value.to)}`
 })
-const pendingCount = computed(() => appointments.value.filter(a => a.status === 'pending').length)
-const approvedCount = computed(() => appointments.value.filter(a => a.status === 'approved').length)
-const canceledCount = computed(() => appointments.value.filter(a => a.status === 'canceled').length)
+
+const filteredKpiAppointments = computed(() => {
+  if (!kpiDateRange.value) return appointments.value
+  
+  return appointments.value.filter(a => {
+    const appDate = a.appointment_date
+    if (typeof kpiDateRange.value === 'string') {
+      return appDate === kpiDateRange.value
+    }
+    const from = kpiDateRange.value.from
+    const to = kpiDateRange.value.to
+    return appDate >= from && appDate <= to
+  })
+})
+
+// Computed Stats
+const todayCount = computed(() => filteredKpiAppointments.value.length)
+const pendingCount = computed(() => filteredKpiAppointments.value.filter(a => a.status === 'pending').length)
+const approvedCount = computed(() => filteredKpiAppointments.value.filter(a => a.status === 'approved').length)
+const canceledCount = computed(() => filteredKpiAppointments.value.filter(a => a.status === 'canceled').length)
 
 // UI Helpers
 const getAvatarColor = (name) => {
