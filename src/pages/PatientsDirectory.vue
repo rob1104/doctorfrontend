@@ -22,7 +22,7 @@
           <q-icon name="contacts" color="primary" class="q-mr-sm" size="sm" />
           Mis Pacientes
         </div>
-        <q-input outlined dense v-model="filter" placeholder="Buscar por nombre, teléfono..." class="q-ml-md bg-grey-2" style="min-width: 300px; border-radius: 8px;" borderless>
+        <q-input outlined dense hide-bottom-space v-model="filter" placeholder="Buscar por nombre, teléfono..." class="q-ml-md bg-grey-2" style="min-width: 300px; border-radius: 8px;" borderless>
           <template v-slot:append>
             <q-icon name="search" color="primary" />
           </template>
@@ -121,6 +121,9 @@
             <q-td :props="props">
               <div class="text-weight-medium text-dark">{{ formatDateNatural(props.row.created_at) }}</div>
               <div class="text-caption text-grey-6">{{ getRelativeTime(props.row.created_at) }}</div>
+              <div v-if="props.row.user" class="text-grey-5 row items-center q-mt-xs" style="font-size: 10px; line-height: 1;">
+                <q-icon name="person_outline" size="10px" class="q-mr-xs" /> {{ props.row.user.name }}
+              </div>
             </q-td>
           </template>
 
@@ -178,55 +181,55 @@
           <div class="col-12 col-md-6">
 
             <!-- Tarjeta: Identificación -->
-            <q-card bordered flat class="q-mb-lg bg-white" style="border-radius: 12px;">
+            <q-card bordered flat class="q-mb-md bg-white" style="border-radius: 12px;">
               <q-card-section class="q-pb-sm">
                 <div class="text-subtitle1 text-weight-bold text-primary row items-center">
                   <q-icon name="badge" size="sm" class="q-mr-sm" /> Identificación y Contacto
                 </div>
               </q-card-section>
               <q-separator inset />
-              <q-card-section class="q-pa-md">
-                <div class="row q-col-gutter-md">
+              <q-card-section class="q-pa-sm q-px-md">
+                <div class="row q-col-gutter-sm">
                   <div class="col-12 col-sm-6">
-                    <q-input v-model="form.first_name" label="Nombre(s) *" outlined dense lazy-rules :rules="[val => !!val || 'Requerido']" autofocus>
+                    <q-input v-model="form.first_name" label="Nombre(s) *" outlined dense hide-bottom-space lazy-rules :rules="[val => !!val || 'Requerido']" autofocus>
                       <template v-slot:prepend><q-icon name="person" size="xs" color="grey-6" /></template>
                     </q-input>
                   </div>
                   <div class="col-12 col-sm-6">
-                    <q-input v-model="form.last_name" label="Apellidos *" outlined dense lazy-rules :rules="[val => !!val || 'Requerido']" />
+                    <q-input v-model="form.last_name" label="Apellidos *" outlined dense hide-bottom-space lazy-rules :rules="[val => !!val || 'Requerido']" />
                   </div>
                   <div class="col-12 col-sm-6">
-                    <q-input v-model="form.phone" label="Teléfono WhatsApp *" outlined dense mask="(###) ###-####" unmasked-value lazy-rules :rules="[val => !!val || 'Requerido']">
+                    <q-input v-model="form.phone" label="Teléfono WhatsApp *" outlined dense hide-bottom-space mask="(###) ###-####" unmasked-value lazy-rules :rules="[val => !!val || 'Requerido']">
                       <template v-slot:prepend><q-icon name="phone" size="xs" color="grey-6" /></template>
                     </q-input>
                   </div>
                   <div class="col-12 col-sm-6">
-                    <q-input v-model="form.email" type="email" label="Correo Electrónico" outlined dense>
+                    <q-input v-model="form.email" type="email" label="Correo Electrónico" outlined dense hide-bottom-space>
                       <template v-slot:prepend><q-icon name="email" size="xs" color="grey-6" /></template>
                     </q-input>
                   </div>
                   <div class="col-12 col-md-6">
-                    <q-input v-model="form.address" label="Dirección (Calle y número)" outlined dense>
+                    <q-input v-model="form.address" label="Dirección (Calle y número)" outlined dense hide-bottom-space>
                       <template v-slot:prepend><q-icon name="place" size="xs" color="grey-6" /></template>
                     </q-input>
                   </div>
                   <div class="col-12 col-md-6">
-                    <q-input v-model="form.neighborhood" label="Colonia" outlined dense />
+                    <q-input v-model="form.neighborhood" label="Colonia" outlined dense hide-bottom-space />
                   </div>
                   <div class="col-12 col-md-4">
-                    <q-input v-model="form.zip_code" label="Código Postal" outlined dense />
+                    <q-input v-model="form.zip_code" label="Código Postal" outlined dense hide-bottom-space />
                   </div>
                   <div class="col-12 col-md-8">
-                    <q-input v-model="form.city" label="Ciudad" outlined dense />
+                    <q-input v-model="form.city" label="Ciudad" outlined dense hide-bottom-space />
                   </div>
                   <div class="col-12 col-md-6">
-                    <q-select v-model="form.country" :options="['México', 'Estados Unidos']" label="País" outlined dense emit-value map-options @update:model-value="form.state = ''" />
+                    <q-select v-model="form.country" :options="['México', 'Estados Unidos']" label="País" outlined dense hide-bottom-space emit-value map-options @update:model-value="form.state = ''" />
                   </div>
                   <div class="col-12 col-md-6">
-                    <q-select v-model="form.state" :options="stateOptions" label="Estado" outlined dense emit-value map-options :disable="!form.country" />
+                    <q-select v-model="form.state" :options="stateOptions" label="Estado" outlined dense hide-bottom-space emit-value map-options :disable="!form.country" />
                   </div>
                   <div class="col-12">
-                    <q-input v-model="form.place_of_birth" label="Lugar de Origen" outlined dense>
+                    <q-input v-model="form.place_of_birth" label="Lugar de Origen" outlined dense hide-bottom-space>
                       <template v-slot:prepend><q-icon name="public" size="xs" color="grey-6" /></template>
                     </q-input>
                   </div>
@@ -242,33 +245,31 @@
                 </div>
               </q-card-section>
               <q-separator inset />
-              <q-card-section class="q-pa-md">
-                <div class="row q-col-gutter-md">
+              <q-card-section class="q-pa-sm q-px-md">
+                <div class="row q-col-gutter-sm">
                   <div class="col-12 col-sm-6">
-                    <q-input v-model="form.date_of_birth" type="date" label="Fecha de Nacimiento" outlined dense stack-label>
+                    <q-input v-model="form.date_of_birth" type="date" label="Fecha de Nacimiento" outlined dense hide-bottom-space stack-label>
                       <template v-slot:prepend><q-icon name="cake" size="xs" color="grey-6" /></template>
                     </q-input>
                   </div>
                   <div class="col-12 col-sm-6">
-                    <q-select v-model="form.gender" :options="['Masculino', 'Femenino', 'Otro']" label="Género" outlined dense emit-value map-options />
+                    <q-select v-model="form.gender" :options="['Masculino', 'Femenino', 'Otro']" label="Género" outlined dense hide-bottom-space emit-value map-options />
                   </div>
                   <div class="col-12 col-sm-6">
-                    <q-select v-model="form.marital_status" :options="['Soltero/a', 'Casado/a', 'Divorciado/a', 'Viudo/a', 'Unión Libre']" label="Estado Civil" outlined dense emit-value map-options />
+                    <q-select v-model="form.marital_status" :options="['Soltero/a', 'Casado/a', 'Divorciado/a', 'Viudo/a', 'Unión Libre']" label="Estado Civil" outlined dense hide-bottom-space emit-value map-options />
                   </div>
                   <div class="col-12 col-sm-6">
-                    <q-input v-model="form.occupation" label="Ocupación" outlined dense>
+                    <q-input v-model="form.occupation" label="Ocupación" outlined dense hide-bottom-space>
                       <template v-slot:prepend><q-icon name="work" size="xs" color="grey-6" /></template>
                     </q-input>
                   </div>
 
-                  <q-separator class="col-12 q-my-sm opacity-0" />
-
-                  <div class="col-12 text-subtitle2 text-grey-8 q-mb-none">Contacto de Emergencia</div>
+                  <div class="col-12 text-subtitle2 text-grey-8 q-mt-sm q-mb-none" style="line-height: 1;">Contacto de Emergencia</div>
                   <div class="col-12 col-sm-6">
-                    <q-input v-model="form.emergency_contact_name" label="Nombre Completo" outlined dense />
+                    <q-input v-model="form.emergency_contact_name" label="Nombre Completo" outlined dense hide-bottom-space />
                   </div>
                   <div class="col-12 col-sm-6">
-                    <q-input v-model="form.emergency_contact_phone" label="Teléfono de Emergencia" outlined dense mask="(###) ###-####" unmasked-value>
+                    <q-input v-model="form.emergency_contact_phone" label="Teléfono de Emergencia" outlined dense hide-bottom-space mask="(###) ###-####" unmasked-value>
                       <template v-slot:prepend><q-icon name="emergency" size="xs" color="red-4" /></template>
                     </q-input>
                   </div>
@@ -281,34 +282,34 @@
           <div class="col-12 col-md-6">
 
             <!-- Tarjeta: Historial Clínico -->
-            <q-card bordered flat class="q-mb-lg bg-white" style="border-radius: 12px; border-top: 3px solid #f44336;">
+            <q-card bordered flat class="q-mb-md bg-white" style="border-radius: 12px; border-top: 3px solid #f44336;">
               <q-card-section class="q-pb-sm">
                 <div class="text-subtitle1 text-weight-bold text-red-7 row items-center">
                   <q-icon name="medical_information" size="sm" class="q-mr-sm" /> Historial Clínico General
                 </div>
               </q-card-section>
               <q-separator inset />
-              <q-card-section class="q-pa-md">
-                <div class="row q-col-gutter-md">
+              <q-card-section class="q-pa-sm q-px-md">
+                <div class="row q-col-gutter-sm">
                   <div class="col-12 col-sm-6">
-                    <q-select v-model="form.blood_type" :options="['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']" label="Tipo de Sangre" outlined dense>
+                    <q-select v-model="form.blood_type" :options="['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']" label="Tipo de Sangre" outlined dense hide-bottom-space>
                       <template v-slot:prepend><q-icon name="bloodtype" size="xs" color="red-5" /></template>
                     </q-select>
                   </div>
                   <div class="col-12">
-                    <q-input v-model="form.allergies" type="textarea" label="Alergias (Medicamentos, alimentos, látex...)" outlined dense autogrow />
+                    <q-input v-model="form.allergies" type="textarea" label="Alergias (Medicamentos, alimentos, látex...)" outlined dense hide-bottom-space autogrow />
                   </div>
                   <div class="col-12">
-                    <q-input v-model="form.chronic_conditions" type="textarea" label="Padecimientos Crónicos" outlined dense autogrow />
+                    <q-input v-model="form.chronic_conditions" type="textarea" label="Padecimientos Crónicos" outlined dense hide-bottom-space autogrow />
                   </div>
                   <div class="col-12">
-                    <q-input v-model="form.current_medications" type="textarea" label="Medicamentos que toma habitualmente" outlined dense autogrow />
+                    <q-input v-model="form.current_medications" type="textarea" label="Medicamentos que toma habitualmente" outlined dense hide-bottom-space autogrow />
                   </div>
                   <div class="col-12">
-                    <q-input v-model="form.surgical_history" type="textarea" label="Historial Quirúrgico" outlined dense autogrow />
+                    <q-input v-model="form.surgical_history" type="textarea" label="Historial Quirúrgico" outlined dense hide-bottom-space autogrow />
                   </div>
                   <div class="col-12">
-                    <q-input v-model="form.family_history" type="textarea" label="Antecedentes Familiares" outlined dense autogrow />
+                    <q-input v-model="form.family_history" type="textarea" label="Antecedentes Familiares" outlined dense hide-bottom-space autogrow />
                   </div>
                 </div>
               </q-card-section>
@@ -322,22 +323,22 @@
                 </div>
               </q-card-section>
               <q-separator inset />
-              <q-card-section class="q-pa-md">
-                <div class="row q-col-gutter-md">
-                  <div class="col-12 col-sm-4">
-                    <q-select v-model="form.skin_type" :options="['I', 'II', 'III', 'IV', 'V', 'VI']" label="Fototipo (Fitzpatrick)" outlined dense emit-value map-options />
+              <q-card-section class="q-pa-sm q-px-md">
+                <div class="row q-col-gutter-sm">
+                  <div class="col-12 col-sm-5">
+                    <q-select v-model="form.skin_type" :options="['I', 'II', 'III', 'IV', 'V', 'VI']" label="Fototipo (Fitzpatrick)" outlined dense hide-bottom-space emit-value map-options />
                   </div>
                   <div class="col-12 col-sm-4">
-                    <q-select v-model="form.skin_tendency" :options="['Seca', 'Mixta', 'Grasa', 'Sensible']" label="Tendencia" outlined dense emit-value map-options />
+                    <q-select v-model="form.skin_tendency" :options="['Seca', 'Mixta', 'Grasa', 'Sensible']" label="Tendencia" outlined dense hide-bottom-space emit-value map-options />
                   </div>
-                  <div class="col-12 col-sm-4">
-                    <q-select v-model="form.sun_exposure_level" :options="['Baja', 'Moderada', 'Alta']" label="Exp. Solar" outlined dense emit-value map-options />
+                  <div class="col-12 col-sm-3">
+                    <q-select v-model="form.sun_exposure_level" :options="['Baja', 'Moderada', 'Alta']" label="Exp. Solar" outlined dense hide-bottom-space emit-value map-options />
                   </div>
                   <div class="col-12">
-                    <q-input v-model="form.previous_skin_conditions" type="textarea" label="Condiciones de Piel Previas" outlined dense autogrow />
+                    <q-input v-model="form.previous_skin_conditions" type="textarea" label="Condiciones de Piel Previas" outlined dense hide-bottom-space autogrow />
                   </div>
                   <div class="col-12">
-                    <q-input v-model="form.skincare_routine" type="textarea" label="Rutina Skincare Actual" outlined dense autogrow />
+                    <q-input v-model="form.skincare_routine" type="textarea" label="Rutina Skincare Actual" outlined dense hide-bottom-space autogrow />
                   </div>
                 </div>
               </q-card-section>
@@ -366,10 +367,10 @@
         </q-card-section>
 
         <q-card-section class="q-pt-md">
-          <q-input v-model="appointmentForm.appointment_date" type="date" label="Fecha" outlined dense class="q-mb-md" autofocus />
-          <q-input v-model="appointmentForm.start_time" type="time" label="Hora" outlined dense class="q-mb-md" />
-          <q-select v-model="appointmentForm.type" :options="[{label: 'Clínico', value: 'clinico'}, {label: 'Estético', value: 'estetico'}]" emit-value map-options label="Tipo de Cita" outlined dense class="q-mb-md" />
-          <q-input v-model="appointmentForm.notes" type="textarea" label="Motivo / Notas" outlined dense autogrow rows="2" />
+          <q-input v-model="appointmentForm.appointment_date" type="date" label="Fecha" outlined dense hide-bottom-space class="q-mb-md" autofocus />
+          <q-input v-model="appointmentForm.start_time" type="time" label="Hora" outlined dense hide-bottom-space class="q-mb-md" />
+          <q-select v-model="appointmentForm.type" :options="[{label: 'Clínico', value: 'clinico'}, {label: 'Estético', value: 'estetico'}]" emit-value map-options label="Tipo de Cita" outlined dense hide-bottom-space class="q-mb-md" />
+          <q-input v-model="appointmentForm.notes" type="textarea" label="Motivo / Notas" outlined dense hide-bottom-space autogrow rows="2" />
         </q-card-section>
 
         <q-card-actions align="right" class="q-pa-md text-primary">

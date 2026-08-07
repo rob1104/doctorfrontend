@@ -817,6 +817,20 @@ onMounted(() => {
   fetchAppointments()
 
   if (window.Echo) {
+    // Inyectar el token más reciente, ya que echo.js solo lo lee una vez al iniciar la app
+    const token = localStorage.getItem('auth_token');
+    if (window.Echo.connector.options) {
+      window.Echo.connector.options.auth = window.Echo.connector.options.auth || {};
+      window.Echo.connector.options.auth.headers = window.Echo.connector.options.auth.headers || {};
+      window.Echo.connector.options.auth.headers['Authorization'] = `Bearer ${token}`;
+    }
+    if (window.Echo.connector.pusher) {
+      window.Echo.connector.pusher.config = window.Echo.connector.pusher.config || {};
+      window.Echo.connector.pusher.config.auth = window.Echo.connector.pusher.config.auth || {};
+      window.Echo.connector.pusher.config.auth.headers = window.Echo.connector.pusher.config.auth.headers || {};
+      window.Echo.connector.pusher.config.auth.headers['Authorization'] = `Bearer ${token}`;
+    }
+
     window.Echo.private('admin.notifications')
       .listen('AppointmentCreated', (e) => {
         const appointment = e.appointment

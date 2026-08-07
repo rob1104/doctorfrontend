@@ -494,183 +494,190 @@
 
     <!-- Dialogo para Editar Datos Clínicos -->
     <q-dialog v-model="editClinicalData" persistent transition-show="scale" transition-hide="scale">
-  <!-- Tarjeta principal configurada como contenedor Flex (column) con altura máxima -->
-  <q-card style="width: 1000px; max-width: 95vw; border-radius: 16px; display: flex; flex-direction: column; max-height: 90vh;" class="bg-grey-1">
+      <q-card style="width: 1100px; max-width: 95vw; border-radius: 16px;" class="bg-grey-1">
 
-    <!-- Encabezado Fijo -->
-    <q-card-section class="row items-center q-pb-md q-pt-md q-px-lg bg-primary text-white shadow-2" style="z-index: 10;">
-      <div>
-        <div class="text-h5 text-weight-bold text-white">Editar Ficha Médica</div>
-        <div class="text-subtitle2 text-white opacity-80">Actualiza los datos clínicos del paciente.</div>
-      </div>
-      <q-space />
-      <q-btn icon="close" flat round dense v-close-popup color="white" />
-    </q-card-section>
-
-    <!-- El Formulario envuelve el contenido scrolleable y los botones fijos -->
-    <q-form @submit="saveClinicalData" class="col column no-wrap">
-
-      <!-- Área de Contenido con Scroll Independiente -->
-      <q-card-section class="col scroll q-pa-lg">
-        <div class="row q-col-gutter-lg">
-
-          <!-- Columna Izquierda: Datos Clínicos -->
-          <div class="col-12 col-md-6">
-            <q-card bordered flat class="q-mb-lg bg-white" style="border-radius: 12px; border-top: 3px solid #f44336;">
-              <q-card-section class="q-pb-sm">
-                <div class="text-subtitle1 text-weight-bold text-red-7 row items-center">
-                  <q-icon name="medical_information" size="sm" class="q-mr-sm" /> Datos Clínicos Básicos
-                </div>
-              </q-card-section>
-              <q-separator inset />
-              <q-card-section class="q-pa-md">
-                <div class="row q-col-gutter-md">
-                  <div class="col-12 col-sm-6">
-                    <q-select v-model="clinicalForm.blood_type" :options="['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']" label="Tipo de Sangre" outlined dense autofocus>
-                      <template v-slot:prepend><q-icon name="bloodtype" size="xs" color="red-5" /></template>
-                    </q-select>
-                  </div>
-                  <div class="col-12 col-sm-6">
-                    <q-select v-model="clinicalForm.skin_type" :options="['I', 'II', 'III', 'IV', 'V', 'VI']" label="Fototipo (Fitzpatrick)" outlined dense>
-                      <template v-slot:prepend><q-icon name="face" size="xs" color="orange-5" /></template>
-                    </q-select>
-                  </div>
-                  <div class="col-12">
-                    <q-input v-model="clinicalForm.allergies" type="textarea" label="Alergias" outlined dense autogrow />
-                  </div>
-                  <div class="col-12">
-                    <q-input v-model="clinicalForm.family_history" type="textarea" label="Antecedentes Familiares" outlined dense autogrow />
-                  </div>
-                  <div class="col-12">
-                    <q-input v-model="clinicalForm.non_pathological_history" type="textarea" label="Antecedentes Personales No Patológicos (APNP)" outlined dense autogrow />
-                  </div>
-                  <div class="col-12" v-if="patient.gender === 'Femenino' || patient.gender === 'Mujer' || clinicalForm.gender === 'Femenino' || clinicalForm.gender === 'Mujer'">
-                    <q-input v-model="clinicalForm.gyneco_obstetric_history" type="textarea" label="Antecedentes Gineco-Obstétricos (AGO)" outlined dense autogrow />
-                  </div>
-                  <div class="col-12">
-                    <q-input v-model="clinicalForm.chronic_conditions" type="textarea" label="Padecimientos Crónicos" outlined dense autogrow />
-                  </div>
-                  <div class="col-12">
-                    <q-input v-model="clinicalForm.current_medications" type="textarea" label="Medicamentos Actuales" outlined dense autogrow />
-                  </div>
-                  <div class="col-12">
-                    <q-input v-model="clinicalForm.surgical_history" type="textarea" label="Historial Quirúrgico" outlined dense autogrow />
-                  </div>
-                </div>
-              </q-card-section>
-            </q-card>
+        <!-- Encabezado Fijo -->
+        <q-card-section class="row items-center q-pb-md q-pt-md q-px-lg bg-primary text-white shadow-2" style="z-index: 10;">
+          <div>
+            <div class="text-h5 text-white text-weight-bold">Editar Ficha Médica</div>
+            <div class="text-subtitle2 opacity-80">Actualiza los datos clínicos del paciente.</div>
           </div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup color="white" />
+        </q-card-section>
 
-          <!-- Columna Derecha: Dermatología y Demografía -->
-          <div class="col-12 col-md-6">
+        <!-- El Formulario envuelve el contenido scrolleable y los botones fijos -->
+        <q-form @submit="saveClinicalData">
+          <!-- Área de Contenido con Scroll Independiente -->
+          <q-card-section class="scroll q-pa-lg" style="max-height: 75vh;">
+            <div class="row q-col-gutter-lg">
 
-            <!-- Datos Dermatológicos -->
-            <q-card bordered flat class="q-mb-lg bg-white" style="border-radius: 12px; border-top: 3px solid #3f51b5;">
-              <q-card-section class="q-pb-sm">
-                <div class="text-subtitle1 text-weight-bold text-indigo-7 row items-center">
-                  <q-icon name="health_and_safety" size="sm" class="q-mr-sm" /> Datos Dermatológicos
-                </div>
-              </q-card-section>
-              <q-separator inset />
-              <q-card-section class="q-pa-md">
-                <div class="row q-col-gutter-md">
-                  <div class="col-12 col-sm-6">
-                    <q-select v-model="clinicalForm.skin_tendency" :options="['Seca', 'Mixta', 'Grasa', 'Sensible']" label="Tendencia de Piel" outlined dense />
-                  </div>
-                  <div class="col-12 col-sm-6">
-                    <q-select v-model="clinicalForm.sun_exposure_level" :options="['Baja', 'Moderada', 'Alta']" label="Exposición Solar" outlined dense>
-                       <template v-slot:prepend><q-icon name="light_mode" size="xs" color="amber-6" /></template>
-                    </q-select>
-                  </div>
-                  <div class="col-12">
-                    <q-input v-model="clinicalForm.previous_skin_conditions" type="textarea" label="Condiciones de Piel Previas" outlined dense autogrow />
-                  </div>
-                  <div class="col-12">
-                    <q-input v-model="clinicalForm.skincare_routine" type="textarea" label="Rutina Skincare Actual" outlined dense autogrow />
-                  </div>
-                </div>
-              </q-card-section>
-            </q-card>
+              <!-- Columna Izquierda: Demografía y Generales -->
+              <div class="col-12 col-md-6">
+                
+                <q-card bordered flat class="q-mb-md bg-white" style="border-radius: 12px; border-top: 3px solid #009688;">
+                  <q-card-section class="q-pb-sm">
+                    <div class="text-subtitle1 text-weight-bold text-teal-7 row items-center">
+                      <q-icon name="manage_accounts" size="sm" class="q-mr-sm" /> Generales y Demográficos
+                    </div>
+                  </q-card-section>
+                  <q-separator inset />
+                  <q-card-section class="q-pa-sm q-px-md">
+                    <div class="row q-col-gutter-sm">
+                      <div class="col-12 col-sm-6">
+                        <q-input v-model="clinicalForm.date_of_birth" type="date" label="Fecha de Nacimiento" outlined dense hide-bottom-space stack-label>
+                          <template v-slot:prepend><q-icon name="cake" size="xs" color="teal-5" /></template>
+                        </q-input>
+                      </div>
+                      <div class="col-12 col-sm-6">
+                        <q-select v-model="clinicalForm.gender" :options="['Masculino', 'Femenino', 'Otro']" label="Género" outlined dense hide-bottom-space />
+                      </div>
+                      <div class="col-12 col-sm-6">
+                        <q-select v-model="clinicalForm.marital_status" :options="['Soltero/a', 'Casado/a', 'Divorciado/a', 'Viudo/a', 'Unión Libre']" label="Estado Civil" outlined dense hide-bottom-space />
+                      </div>
+                      <div class="col-12 col-sm-6">
+                        <q-input v-model="clinicalForm.occupation" label="Ocupación" outlined dense hide-bottom-space>
+                          <template v-slot:prepend><q-icon name="work" size="xs" color="teal-5" /></template>
+                        </q-input>
+                      </div>
+                      <div class="col-12 text-subtitle2 text-grey-8 q-mt-sm q-mb-none" style="line-height: 1;">Contacto de Emergencia</div>
+                      <div class="col-12 col-sm-6">
+                        <q-input v-model="clinicalForm.emergency_contact_name" label="Nombre" outlined dense hide-bottom-space />
+                      </div>
+                      <div class="col-12 col-sm-6">
+                        <q-input v-model="clinicalForm.emergency_contact_phone" label="Teléfono" outlined dense hide-bottom-space>
+                          <template v-slot:prepend><q-icon name="emergency" size="xs" color="red-4" /></template>
+                        </q-input>
+                      </div>
+                    </div>
+                  </q-card-section>
+                </q-card>
 
-            <!-- Datos Generales -->
-            <q-card bordered flat class="bg-white" style="border-radius: 12px; border-top: 3px solid #009688;">
-              <q-card-section class="q-pb-sm">
-                <div class="text-subtitle1 text-weight-bold text-teal-7 row items-center">
-                  <q-icon name="manage_accounts" size="sm" class="q-mr-sm" /> Generales y Demográficos
-                </div>
-              </q-card-section>
-              <q-separator inset />
-              <q-card-section class="q-pa-md">
-                <div class="row q-col-gutter-md">
-                  <div class="col-12 col-sm-6">
-                    <q-input v-model="clinicalForm.date_of_birth" type="date" label="Fecha de Nacimiento" outlined dense stack-label>
-                      <template v-slot:prepend><q-icon name="cake" size="xs" color="teal-5" /></template>
-                    </q-input>
-                  </div>
-                  <div class="col-12 col-sm-6">
-                    <q-select v-model="clinicalForm.gender" :options="['Masculino', 'Femenino', 'Otro']" label="Género" outlined dense />
-                  </div>
-                  <div class="col-12 col-sm-6">
-                    <q-select v-model="clinicalForm.marital_status" :options="['Soltero/a', 'Casado/a', 'Divorciado/a', 'Viudo/a', 'Unión Libre']" label="Estado Civil" outlined dense />
-                  </div>
-                  <div class="col-12 col-sm-6">
-                    <q-input v-model="clinicalForm.occupation" label="Ocupación" outlined dense>
-                      <template v-slot:prepend><q-icon name="work" size="xs" color="teal-5" /></template>
-                    </q-input>
-                  </div>
-                  <div class="col-12 col-md-6">
-                    <q-input v-model="clinicalForm.address" label="Dirección (Calle y número)" outlined dense>
-                      <template v-slot:prepend><q-icon name="place" size="xs" color="teal-5" /></template>
-                    </q-input>
-                  </div>
-                  <div class="col-12 col-md-6">
-                    <q-input v-model="clinicalForm.neighborhood" label="Colonia" outlined dense />
-                  </div>
-                  <div class="col-12 col-md-4">
-                    <q-input v-model="clinicalForm.zip_code" label="Código Postal" outlined dense />
-                  </div>
-                  <div class="col-12 col-md-8">
-                    <q-input v-model="clinicalForm.city" label="Ciudad" outlined dense />
-                  </div>
-                  <div class="col-12 col-md-6">
-                    <q-select v-model="clinicalForm.country" :options="['México', 'Estados Unidos']" label="País" outlined dense emit-value map-options @update:model-value="clinicalForm.state = ''" />
-                  </div>
-                  <div class="col-12 col-md-6">
-                    <q-select v-model="clinicalForm.state" :options="stateOptions" label="Estado" outlined dense emit-value map-options :disable="!clinicalForm.country" />
-                  </div>
-                  <div class="col-12">
-                    <q-input v-model="clinicalForm.place_of_birth" label="Lugar de Origen" outlined dense>
-                      <template v-slot:prepend><q-icon name="public" size="xs" color="teal-5" /></template>
-                    </q-input>
-                  </div>
-                  <div class="col-12 text-subtitle2 text-grey-8 q-mb-none q-mt-md">Contacto de Emergencia</div>
-                  <div class="col-12 col-sm-6">
-                    <q-input v-model="clinicalForm.emergency_contact_name" label="Nombre" outlined dense />
-                  </div>
-                  <div class="col-12 col-sm-6">
-                    <q-input v-model="clinicalForm.emergency_contact_phone" label="Teléfono" outlined dense>
-                      <template v-slot:prepend><q-icon name="emergency" size="xs" color="red-4" /></template>
-                    </q-input>
-                  </div>
-                </div>
-              </q-card-section>
-            </q-card>
+                <q-card bordered flat class="bg-white" style="border-radius: 12px; border-top: 3px solid #607d8b;">
+                  <q-card-section class="q-pb-sm">
+                    <div class="text-subtitle1 text-weight-bold text-blue-grey-7 row items-center">
+                      <q-icon name="place" size="sm" class="q-mr-sm" /> Dirección y Origen
+                    </div>
+                  </q-card-section>
+                  <q-separator inset />
+                  <q-card-section class="q-pa-sm q-px-md">
+                    <div class="row q-col-gutter-sm">
+                      <div class="col-12 col-md-6">
+                        <q-input v-model="clinicalForm.address" label="Dirección (Calle y número)" outlined dense hide-bottom-space>
+                          <template v-slot:prepend><q-icon name="place" size="xs" color="blue-grey-5" /></template>
+                        </q-input>
+                      </div>
+                      <div class="col-12 col-md-6">
+                        <q-input v-model="clinicalForm.neighborhood" label="Colonia" outlined dense hide-bottom-space />
+                      </div>
+                      <div class="col-12 col-md-4">
+                        <q-input v-model="clinicalForm.zip_code" label="Código Postal" outlined dense hide-bottom-space />
+                      </div>
+                      <div class="col-12 col-md-8">
+                        <q-input v-model="clinicalForm.city" label="Ciudad" outlined dense hide-bottom-space />
+                      </div>
+                      <div class="col-12 col-md-6">
+                        <q-select v-model="clinicalForm.country" :options="['México', 'Estados Unidos']" label="País" outlined dense hide-bottom-space emit-value map-options @update:model-value="clinicalForm.state = ''" />
+                      </div>
+                      <div class="col-12 col-md-6">
+                        <q-select v-model="clinicalForm.state" :options="stateOptions" label="Estado" outlined dense hide-bottom-space emit-value map-options :disable="!clinicalForm.country" />
+                      </div>
+                      <div class="col-12">
+                        <q-input v-model="clinicalForm.place_of_birth" label="Lugar de Origen" outlined dense hide-bottom-space>
+                          <template v-slot:prepend><q-icon name="public" size="xs" color="blue-grey-5" /></template>
+                        </q-input>
+                      </div>
+                    </div>
+                  </q-card-section>
+                </q-card>
+              </div>
 
-          </div>
-        </div>
-      </q-card-section>
+              <!-- Columna Derecha: Datos Clínicos y Dermatología -->
+              <div class="col-12 col-md-6">
+                
+                <q-card bordered flat class="q-mb-md bg-white" style="border-radius: 12px; border-top: 3px solid #f44336;">
+                  <q-card-section class="q-pb-sm">
+                    <div class="text-subtitle1 text-weight-bold text-red-7 row items-center">
+                      <q-icon name="medical_information" size="sm" class="q-mr-sm" /> Historial Clínico
+                    </div>
+                  </q-card-section>
+                  <q-separator inset />
+                  <q-card-section class="q-pa-sm q-px-md">
+                    <div class="row q-col-gutter-sm">
+                      <div class="col-12 col-sm-6">
+                        <q-select v-model="clinicalForm.blood_type" :options="['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']" label="Tipo de Sangre" outlined dense hide-bottom-space>
+                          <template v-slot:prepend><q-icon name="bloodtype" size="xs" color="red-5" /></template>
+                        </q-select>
+                      </div>
+                      <div class="col-12">
+                        <q-input v-model="clinicalForm.allergies" type="textarea" label="Alergias" outlined dense hide-bottom-space autogrow />
+                      </div>
+                      <div class="col-12">
+                        <q-input v-model="clinicalForm.chronic_conditions" type="textarea" label="Padecimientos Crónicos" outlined dense hide-bottom-space autogrow />
+                      </div>
+                      <div class="col-12">
+                        <q-input v-model="clinicalForm.current_medications" type="textarea" label="Medicamentos Actuales" outlined dense hide-bottom-space autogrow />
+                      </div>
+                      <div class="col-12">
+                        <q-input v-model="clinicalForm.family_history" type="textarea" label="Antecedentes Familiares" outlined dense hide-bottom-space autogrow />
+                      </div>
+                      <div class="col-12">
+                        <q-input v-model="clinicalForm.non_pathological_history" type="textarea" label="Antecedentes Personales No Patológicos (APNP)" outlined dense hide-bottom-space autogrow />
+                      </div>
+                      <div class="col-12" v-if="patient.gender === 'Femenino' || patient.gender === 'Mujer' || clinicalForm.gender === 'Femenino' || clinicalForm.gender === 'Mujer'">
+                        <q-input v-model="clinicalForm.gyneco_obstetric_history" type="textarea" label="Antecedentes Gineco-Obstétricos (AGO)" outlined dense hide-bottom-space autogrow />
+                      </div>
+                      <div class="col-12">
+                        <q-input v-model="clinicalForm.surgical_history" type="textarea" label="Historial Quirúrgico" outlined dense hide-bottom-space autogrow />
+                      </div>
+                    </div>
+                  </q-card-section>
+                </q-card>
 
-      <q-separator />
+                <!-- Datos Dermatológicos -->
+                <q-card bordered flat class="bg-white" style="border-radius: 12px; border-top: 3px solid #3f51b5;">
+                  <q-card-section class="q-pb-sm">
+                    <div class="text-subtitle1 text-weight-bold text-indigo-7 row items-center">
+                      <q-icon name="face" size="sm" class="q-mr-sm" /> Datos Dermatológicos
+                    </div>
+                  </q-card-section>
+                  <q-separator inset />
+                  <q-card-section class="q-pa-sm q-px-md">
+                    <div class="row q-col-gutter-sm">
+                      <div class="col-12 col-sm-5">
+                        <q-select v-model="clinicalForm.skin_type" :options="['I', 'II', 'III', 'IV', 'V', 'VI']" label="Fototipo (Fitzpatrick)" outlined dense hide-bottom-space />
+                      </div>
+                      <div class="col-12 col-sm-4">
+                        <q-select v-model="clinicalForm.skin_tendency" :options="['Seca', 'Mixta', 'Grasa', 'Sensible']" label="Tendencia" outlined dense hide-bottom-space />
+                      </div>
+                      <div class="col-12 col-sm-3">
+                        <q-select v-model="clinicalForm.sun_exposure_level" :options="['Baja', 'Moderada', 'Alta']" label="Exp. Solar" outlined dense hide-bottom-space />
+                      </div>
+                      <div class="col-12">
+                        <q-input v-model="clinicalForm.previous_skin_conditions" type="textarea" label="Condiciones de Piel Previas" outlined dense hide-bottom-space autogrow />
+                      </div>
+                      <div class="col-12">
+                        <q-input v-model="clinicalForm.skincare_routine" type="textarea" label="Rutina Skincare Actual" outlined dense hide-bottom-space autogrow />
+                      </div>
+                    </div>
+                  </q-card-section>
+                </q-card>
 
-      <!-- Footer Fijo de Acciones -->
-      <q-card-actions align="right" class="q-pa-md bg-white">
-        <q-btn flat label="Cancelar" color="grey-8" v-close-popup class="q-mr-sm" />
-        <q-btn unelevated icon="save" label="Guardar Datos Clínicos" color="primary" type="submit" class="q-px-lg shadow-2 text-weight-bold" style="border-radius: 8px;" :loading="savingClinical" />
-      </q-card-actions>
+              </div>
+            </div>
+          </q-card-section>
 
-    </q-form>
-  </q-card>
-</q-dialog>
+          <q-separator />
+
+          <!-- Footer Fijo de Acciones -->
+          <q-card-actions align="right" class="q-pa-md bg-white">
+            <q-btn flat label="Cancelar" color="grey-8" v-close-popup class="q-mr-sm" />
+            <q-btn unelevated icon="save" label="Guardar Datos Clínicos" color="primary" type="submit" class="q-px-lg shadow-2 text-weight-bold" style="border-radius: 8px;" :loading="savingClinical" />
+          </q-card-actions>
+
+        </q-form>
+      </q-card>
+    </q-dialog>
 
     <!-- Dialogo para Agendar Próxima Cita -->
     <q-dialog v-model="showAppointmentDialog" persistent>

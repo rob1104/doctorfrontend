@@ -23,6 +23,7 @@ const routes = [
       { path: 'patients', component: () => import('../pages/PatientsDirectory.vue') },
       { path: 'patient/:id', component: () => import('../pages/PatientProfile.vue') },
       { path: 'medications', component: () => import('../pages/MedicationsDirectory.vue') },
+      { path: 'users', component: () => import('../pages/UsersDirectory.vue') },
       { path: 'cobranza', component: () => import('../pages/cobranza/CobranzaPage.vue') },
       { path: 'settings', component: () => import('../pages/SettingsPage.vue') }
     ]

@@ -74,6 +74,22 @@
           </q-item-section>
         </q-item>
 
+        <q-item 
+          clickable 
+          tag="a" 
+          href="#/admin/users" 
+          class="rounded-borders q-mb-sm"
+          v-if="!authStore.user || authStore.user.id === 1 || ['admin', 'administrador', 'doctor'].includes((authStore.user.role || '').toLowerCase())"
+        >
+          <q-item-section avatar>
+            <q-icon name="manage_accounts" color="white" />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>Usuarios</q-item-label>
+            <q-item-label caption class="text-grey-5">Control de Accesos</q-item-label>
+          </q-item-section>
+        </q-item>
+
         <q-item clickable tag="a" href="#/admin/settings" class="rounded-borders q-mb-sm">
           <q-item-section avatar>
             <q-icon name="settings" color="white" />
