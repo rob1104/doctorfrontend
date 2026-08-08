@@ -16,6 +16,9 @@
         </q-toolbar-title>
         <div class="text-grey-7 text-caption q-mr-md hidden-xs">Panel Administrativo</div>
 
+        <!-- Dark Mode Toggle -->
+        <q-btn flat dense round :icon="$q.dark.isActive ? 'light_mode' : 'dark_mode'" :color="$q.dark.isActive ? 'warning' : 'dark'" class="q-mr-sm" @click="toggleDarkMode" />
+
         <!-- Notificaciones de Citas -->
         <q-btn flat dense round icon="event" color="dark" class="q-mr-sm">
           <q-badge v-if="notificationsStore.unreadAppointments > 0" color="red" floating>
@@ -186,12 +189,14 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useQuasar } from 'quasar'
 import { useAuthStore } from '../stores/auth'
 import { useNotificationsStore } from '../stores/notifications'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const notificationsStore = useNotificationsStore()
+const $q = useQuasar()
 
 const leftDrawerOpen = ref(false)
 const version = import.meta.env.VITE_APP_VERSION || 'Desarrollo'
@@ -215,6 +220,11 @@ const handleNotificationClick = async (notif, type) => {
   } else if (type === 'appointment') {
     router.push({ path: '/admin/dashboard', query: { openAppointment: notif.data.id } })
   }
+}
+
+const toggleDarkMode = () => {
+  $q.dark.toggle()
+  localStorage.setItem('darkMode', $q.dark.isActive)
 }
 
 const toggleLeftDrawer = () => {

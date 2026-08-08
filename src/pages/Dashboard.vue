@@ -7,6 +7,9 @@
         <div class="text-h4 text-dark text-weight-bold">Control Clínico</div>
         <div class="text-subtitle1 text-grey-6 q-mt-xs">Monitoreo y Gestión de Citas Médicas</div>
       </div>
+      <div>
+        <q-btn color="primary" icon="add" label="Nueva Cita" @click="openNewAppointmentDialog" class="shadow-2" rounded unelevated />
+      </div>
     </div>
 
     <!-- Stats Header & Picker -->
@@ -87,12 +90,11 @@
           <div class="text-h6 text-weight-bold text-dark q-mr-lg">
             {{ viewMode === 'table' ? 'Citas (Tabla)' : (viewMode === 'calendar' ? 'Calendario Mensual' : 'Agenda Diaria') }}
           </div>
-          <q-btn-group rounded class="shadow-1 q-mr-md">
+          <q-btn-group rounded class="shadow-1">
             <q-btn :color="viewMode === 'table' ? 'primary' : 'white'" :text-color="viewMode === 'table' ? 'white' : 'grey-8'" label="Tabla" icon="table_chart" @click="viewMode = 'table'" />
             <q-btn :color="viewMode === 'calendar' ? 'primary' : 'white'" :text-color="viewMode === 'calendar' ? 'white' : 'grey-8'" label="Calendario" icon="calendar_month" @click="viewMode = 'calendar'" />
             <q-btn :color="viewMode === 'agenda' ? 'primary' : 'white'" :text-color="viewMode === 'agenda' ? 'white' : 'grey-8'" label="Agenda" icon="view_agenda" @click="viewMode = 'agenda'" />
           </q-btn-group>
-          <q-btn color="primary" icon="add" label="Nueva Cita" @click="openNewAppointmentDialog" class="shadow-1" rounded unelevated size="sm" padding="xs sm" />
         </div>
         <q-input v-if="viewMode === 'table'" outlined dense v-model="filter" placeholder="Buscar paciente..." class="q-ml-md" style="min-width: 250px">
           <template v-slot:append>
