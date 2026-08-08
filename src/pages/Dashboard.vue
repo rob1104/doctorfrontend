@@ -559,7 +559,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { api } from '../boot/axios'
@@ -1082,30 +1082,37 @@ const scrollToBottom = () => {
   })
 }
 
-onMounted(async () => {
-  await fetchAppointments()
-
-  // Revisar si venimos de una notificacion
-  if (route.query.openChat) {
-    const targetPhone = String(route.query.openChat).replace(/\D/g, '')
+const handleQueryParams = (query) => {
+  if (query.openChat) {
+    const targetPhone = String(query.openChat).replace(/\D/g, '')
     // find patient or mock to open chat
     const foundApp = appointments.value.find(a => String(a.patient?.phone || '').replace(/\D/g, '') === targetPhone)
     if (foundApp) {
       openChat(foundApp)
     } else {
       // open chat with mock appointment
-      openChat({ patient: { phone: route.query.openChat, first_name: 'Paciente', last_name: '(Buscando...)' } })
+      openChat({ patient: { phone: query.openChat, first_name: 'Paciente', last_name: '(Buscando...)' } })
     }
-    // Clean query
-    router.replace({ path: '/admin/dashboard' })
-  } else if (route.query.openAppointment) {
-    const targetId = parseInt(route.query.openAppointment)
+  } else if (query.openAppointment) {
+    const targetId = parseInt(query.openAppointment)
     const foundApp = appointments.value.find(a => a.id === targetId)
     if (foundApp) {
       openAppointmentDetails(foundApp)
     }
-    router.replace({ path: '/admin/dashboard' })
   }
+}
+
+watch(() => route.query, (newQuery) => {
+  if (newQuery && Object.keys(newQuery).length > 0) {
+    handleQueryParams(newQuery)
+  }
+})
+
+onMounted(async () => {
+  await fetchAppointments()
+
+  // Revisar si venimos de una notificacion en la carga inicial
+  handleQueryParams(route.query)
 
   if (window.Echo) {
     // Inyectar el token más reciente, ya que echo.js solo lo lee una vez al iniciar la app

@@ -62,7 +62,7 @@
                   <q-avatar color="green" text-color="white" icon="chat" />
                 </q-item-section>
                 <q-item-section>
-                  <q-item-label class="text-weight-bold">{{ notif.data.phone }}</q-item-label>
+                  <q-item-label class="text-weight-bold">{{ notif.data.patient_name || notif.data.phone }}</q-item-label>
                   <q-item-label caption lines="1">{{ notif.data.message }}</q-item-label>
                 </q-item-section>
               </q-item>

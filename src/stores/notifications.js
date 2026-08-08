@@ -29,9 +29,11 @@ export const useNotificationsStore = defineStore('notifications', {
     async markAsRead(id, type) {
       try {
         await api.patch(`/notifications/${id}/read`)
-        const list = type === 'whatsapp' ? this.whatsapp : this.appointments
-        const item = list.find(n => n.id === id)
-        if (item) item.is_read = true
+        if (type === 'whatsapp') {
+          this.whatsapp = this.whatsapp.filter(n => n.id !== id)
+        } else {
+          this.appointments = this.appointments.filter(n => n.id !== id)
+        }
       } catch (error) {
         console.error('Error marking as read:', error)
       }
@@ -40,8 +42,11 @@ export const useNotificationsStore = defineStore('notifications', {
     async markAllAsRead(type) {
       try {
         await api.post(`/notifications/mark-all-read`, null, { params: { type } })
-        const list = type === 'whatsapp' ? this.whatsapp : this.appointments
-        list.forEach(n => n.is_read = true)
+        if (type === 'whatsapp') {
+          this.whatsapp = []
+        } else {
+          this.appointments = []
+        }
       } catch (error) {
         console.error('Error marking all as read:', error)
       }
