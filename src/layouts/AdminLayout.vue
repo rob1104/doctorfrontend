@@ -14,7 +14,61 @@
         <q-toolbar-title class="text-weight-bold">
           <span class="text-primary">Dr.</span> Sobrevilla
         </q-toolbar-title>
-        <div class="text-grey-7 text-caption">Panel Administrativo</div>
+        <div class="text-grey-7 text-caption q-mr-md hidden-xs">Panel Administrativo</div>
+
+        <!-- Notificaciones de Citas -->
+        <q-btn flat dense round icon="event" color="dark" class="q-mr-sm">
+          <q-badge v-if="notificationsStore.unreadAppointments > 0" color="red" floating>
+            {{ notificationsStore.unreadAppointments }}
+          </q-badge>
+          <q-menu max-height="400px" style="min-width: 300px;">
+            <q-list separator>
+              <q-item-label header class="text-weight-bold row items-center justify-between">
+                Citas Nuevas
+                <q-btn v-if="notificationsStore.unreadAppointments > 0" flat dense color="primary" label="Marcar todas leídas" @click="notificationsStore.markAllAsRead('appointment')" size="sm" />
+              </q-item-label>
+              <q-item v-if="notificationsStore.appointments.length === 0">
+                <q-item-section class="text-grey text-center">No hay notificaciones</q-item-section>
+              </q-item>
+              <q-item v-for="notif in notificationsStore.appointments" :key="notif.id" clickable v-ripple @click="handleNotificationClick(notif, 'appointment')" :class="!notif.is_read ? 'bg-blue-1' : ''">
+                <q-item-section avatar>
+                  <q-avatar color="primary" text-color="white" icon="event_available" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label class="text-weight-bold">{{ notif.data.patient?.first_name }} {{ notif.data.patient?.last_name }}</q-item-label>
+                  <q-item-label caption lines="1">{{ notif.data.appointment_date }} a las {{ notif.data.start_time?.substring(0,5) }}</q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </q-menu>
+        </q-btn>
+
+        <!-- Notificaciones de WhatsApp -->
+        <q-btn flat dense round icon="chat" color="dark" class="q-mr-md">
+          <q-badge v-if="notificationsStore.unreadWhatsapp > 0" color="red" floating>
+            {{ notificationsStore.unreadWhatsapp }}
+          </q-badge>
+          <q-menu max-height="400px" style="min-width: 300px;">
+            <q-list separator>
+              <q-item-label header class="text-weight-bold row items-center justify-between">
+                Mensajes de WhatsApp
+                <q-btn v-if="notificationsStore.unreadWhatsapp > 0" flat dense color="green" label="Marcar todos leídos" @click="notificationsStore.markAllAsRead('whatsapp')" size="sm" />
+              </q-item-label>
+              <q-item v-if="notificationsStore.whatsapp.length === 0">
+                <q-item-section class="text-grey text-center">No hay mensajes nuevos</q-item-section>
+              </q-item>
+              <q-item v-for="notif in notificationsStore.whatsapp" :key="notif.id" clickable v-ripple @click="handleNotificationClick(notif, 'whatsapp')" :class="!notif.is_read ? 'bg-green-1' : ''">
+                <q-item-section avatar>
+                  <q-avatar color="green" text-color="white" icon="chat" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label class="text-weight-bold">{{ notif.data.phone }}</q-item-label>
+                  <q-item-label caption lines="1">{{ notif.data.message }}</q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </q-menu>
+        </q-btn>
       </q-toolbar>
     </q-header>
 
@@ -130,15 +184,38 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import { useNotificationsStore } from '../stores/notifications'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const notificationsStore = useNotificationsStore()
 
 const leftDrawerOpen = ref(false)
 const version = import.meta.env.VITE_APP_VERSION || 'Desarrollo'
+
+onMounted(() => {
+  notificationsStore.fetchNotifications()
+  notificationsStore.startListening()
+})
+
+onUnmounted(() => {
+  notificationsStore.stopListening()
+})
+
+const handleNotificationClick = async (notif, type) => {
+  if (!notif.is_read) {
+    await notificationsStore.markAsRead(notif.id, type)
+  }
+  
+  if (type === 'whatsapp') {
+    router.push({ path: '/admin/dashboard', query: { openChat: notif.data.phone } })
+  } else if (type === 'appointment') {
+    router.push({ path: '/admin/dashboard', query: { openAppointment: notif.data.id } })
+  }
+}
 
 const toggleLeftDrawer = () => {
   leftDrawerOpen.value = !leftDrawerOpen.value

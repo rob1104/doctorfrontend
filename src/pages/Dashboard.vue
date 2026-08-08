@@ -560,7 +560,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { api } from '../boot/axios'
 import { formatDistanceToNow, parseISO, format } from 'date-fns'
@@ -568,6 +568,7 @@ import { es } from 'date-fns/locale'
 
 const $q = useQuasar()
 const router = useRouter()
+const route = useRoute()
 const appointments = ref([])
 const loading = ref(true)
 const filter = ref('')
@@ -1081,8 +1082,30 @@ const scrollToBottom = () => {
   })
 }
 
-onMounted(() => {
-  fetchAppointments()
+onMounted(async () => {
+  await fetchAppointments()
+
+  // Revisar si venimos de una notificacion
+  if (route.query.openChat) {
+    const targetPhone = String(route.query.openChat).replace(/\D/g, '')
+    // find patient or mock to open chat
+    const foundApp = appointments.value.find(a => String(a.patient?.phone || '').replace(/\D/g, '') === targetPhone)
+    if (foundApp) {
+      openChat(foundApp)
+    } else {
+      // open chat with mock appointment
+      openChat({ patient: { phone: route.query.openChat, first_name: 'Paciente', last_name: '(Buscando...)' } })
+    }
+    // Clean query
+    router.replace({ path: '/admin/dashboard' })
+  } else if (route.query.openAppointment) {
+    const targetId = parseInt(route.query.openAppointment)
+    const foundApp = appointments.value.find(a => a.id === targetId)
+    if (foundApp) {
+      openAppointmentDetails(foundApp)
+    }
+    router.replace({ path: '/admin/dashboard' })
+  }
 
   if (window.Echo) {
     // Inyectar el token más reciente, ya que echo.js solo lo lee una vez al iniciar la app
@@ -1103,18 +1126,6 @@ onMounted(() => {
       .listen('AppointmentCreated', (e) => {
         const appointment = e.appointment
         appointments.value.unshift(appointment)
-
-        $q.notify({
-          color: 'primary',
-          textColor: 'white',
-          icon: 'notifications_active',
-          message: `Nuevo paciente agendó: ${appointment.patient.first_name} ${appointment.patient.last_name}`,
-          caption: `Fecha: ${formatDateNatural(appointment.appointment_date)} a las ${appointment.start_time.substring(0,5)}`,
-          position: 'top-right',
-          classes: 'elegant-notify',
-          timeout: 6000,
-          actions: [{ label: 'Ver', color: 'white' }]
-        })
       })
       .listen('WhatsAppMessageReceived', (e) => {
         const msg = e.message
@@ -1128,18 +1139,6 @@ onMounted(() => {
             chatMessages.value = response.data
             setTimeout(scrollToBottom, 200)
           }).catch(err => console.error('Error recargando chat', err))
-        } else if (msg.is_from_patient) {
-          // Notificación general si está cerrado o en otro chat
-          $q.notify({
-            color: 'green-7',
-            textColor: 'white',
-            icon: 'chat',
-            message: `Nuevo mensaje de WhatsApp`,
-            caption: `${msg.phone} dice: "${msg.message.substring(0, 30)}..."`,
-            position: 'bottom-right',
-            timeout: 5000,
-            classes: 'elegant-notify'
-          })
         }
       })
   }
