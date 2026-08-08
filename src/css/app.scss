@@ -48,3 +48,150 @@ h1, h2, h3, h4, h5, h6, .text-h1, .text-h2, .text-h3, .text-h4, .text-h5, .text-
 .q-chip {
   border-radius: 8px !important;
 }
+
+/* ============================================================
+   DARK MODE OVERRIDES
+   Se aplican dinámicamente cuando $q.dark.isActive es true
+============================================================ */
+body.body--dark {
+  background-color: #0f172a !important; /* Un poco más oscuro para modo dark */
+
+  /* Textos */
+  h1, h2, h3, h4, h5, h6, .text-h1, .text-h2, .text-h3, .text-h4, .text-h5, .text-h6 {
+    color: #f8fafc !important;
+  }
+  .text-dark {
+    color: #e2e8f0 !important;
+  }
+  .text-grey-8 {
+    color: #cbd5e1 !important;
+  }
+  .text-grey-7 {
+    color: #94a3b8 !important;
+  }
+  .text-grey-6 {
+    color: #64748b !important;
+  }
+
+  /* Fondos utilitarios forzados en los componentes */
+  .bg-white {
+    background-color: #1e293b !important;
+  }
+  .bg-grey-1 {
+    background-color: #0f172a !important;
+  }
+  .bg-grey-2 {
+    background-color: #1e293b !important;
+  }
+  
+  /* Tarjetas (Quasar Cards) */
+  .q-card {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+  }
+
+  /* Header y bordes inline */
+  .q-header {
+    border-bottom: 1px solid #334155 !important;
+  }
+  
+  div[style*="border-top: 3px solid"] {
+    background-color: #1e293b !important;
+  }
+  div[style*="border: 1px solid #eceff1"] {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+  }
+
+  /* Tablas (Quasar Table) */
+  .q-table__container {
+    background-color: transparent !important;
+  }
+  .q-table th {
+    color: #f8fafc !important;
+    border-bottom: 1px solid #334155 !important;
+  }
+  .q-table td {
+    color: #e2e8f0 !important;
+    border-bottom: 1px solid #334155 !important;
+  }
+  
+  /* Inputs y Formularios */
+  .q-field__control {
+    background-color: #0f172a !important;
+  }
+  .q-field__native, .q-field__prefix, .q-field__suffix, .q-field__input {
+    color: #e2e8f0 !important;
+  }
+  .q-field__label {
+    color: #94a3b8 !important;
+  }
+  .q-field--outlined .q-field__control:before {
+    border-color: #334155 !important;
+  }
+
+  /* Listas / Menus */
+  .q-item {
+    color: #e2e8f0 !important;
+  }
+  .q-menu {
+    background-color: #1e293b !important;
+    border: 1px solid #334155 !important;
+  }
+
+  /* Chat y detalles */
+  .q-message-text {
+    background-color: #334155 !important;
+    color: #f8fafc !important;
+  }
+  .q-message-text--sent {
+    background-color: #009688 !important;
+    color: #ffffff !important;
+  }
+  .q-message-name, .q-message-stamp {
+    color: #94a3b8 !important;
+  }
+  
+  /* Utilidades para notificaciones de lectura (bg-blue-1, bg-green-1) */
+  .bg-blue-1 {
+    background-color: #1e3a8a !important; /* blue-9 approx */
+  }
+  .bg-green-1 {
+    background-color: #14532d !important; /* green-9 approx */
+  }
+
+  /* Títulos de Modales / Diálogos */
+  .q-card-section.bg-primary {
+    background-color: #0f172a !important;
+    border-bottom: 1px solid #334155 !important;
+  }
+
+  /* Suavizar Hover de la Tabla */
+  .q-table tbody tr:hover > td:before,
+  .q-table tbody tr:hover > td {
+    background-color: rgba(255, 255, 255, 0.03) !important;
+  }
+
+  /* Calendario Personalizado */
+  .calendar-grid {
+    background-color: #334155 !important;
+    border-color: #334155 !important;
+  }
+  .calendar-header-day {
+    background-color: #0f172a !important;
+    color: #94a3b8 !important;
+  }
+  .calendar-cell {
+    background-color: #1e293b !important;
+  }
+  .calendar-cell:hover {
+    background-color: #334155 !important;
+  }
+  .calendar-cell.other-month {
+    background-color: #0f172a !important;
+    opacity: 0.8 !important;
+  }
+  .calendar-event {
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+}
