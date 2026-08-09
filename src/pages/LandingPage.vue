@@ -510,9 +510,6 @@ const verifyOtpAndBook = async () => {
 </script>
 
 <style lang="scss" scoped>
-.landing-page {
-  /* background-color: #FFFFFF; Removed to let layout handle background */
-}
 
 .max-width-container {
   max-width: 1200px;
