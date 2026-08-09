@@ -1,40 +1,63 @@
 <template>
-  <q-page class="landing-page">
+  <q-page :class="['landing-page', { 'bg-dark text-white': $q.dark.isActive }]">
 
     <!-- Hero Section -->
-    <section class="hero-section window-height flex flex-center relative-position">
+    <section class="hero-section flex flex-center relative-position">
       <div class="row full-width max-width-container q-px-md items-center">
-        <div class="col-12 col-md-6 q-pr-lg-xl z-top">
-          <h1 class="text-h2 text-weight-bolder text-dark q-mb-md hero-title">
+        <!-- Text Content -->
+        <div class="col-12 col-md-6 q-pr-lg-xl q-pb-xl q-pt-md relative-position" style="z-index: 1;">
+          <div class="q-mb-md">
+            <q-badge outline color="primary" class="q-px-md q-py-sm text-subtitle2 text-weight-bold shadow-1 bg-transparent" style="border-width: 2px;">
+              <q-icon name="stars" class="q-mr-sm" size="18px" /> Dermatología Especializada
+            </q-badge>
+          </div>
+
+          <h1 class="text-h2 text-weight-bolder q-mb-md hero-title" :class="$q.dark.isActive ? 'text-white' : 'text-dark'">
             Salud y estética <br />
             <span class="text-primary">para tu piel.</span>
           </h1>
-          <p class="text-h6 text-grey-8 q-mb-xl text-weight-regular hero-subtitle">
-            Atención dermatológica de prestigio con tecnología avanzada y un enfoque centrado en tu bienestar.
+          <p class="text-h6 q-mb-xl text-weight-regular hero-subtitle" :class="$q.dark.isActive ? 'text-grey-4' : 'text-grey-7'">
+            Atención dermatológica de prestigio con tecnología avanzada y un enfoque centrado en tu bienestar. Descubre la mejor versión de tu piel.
           </p>
-          <q-btn
-            color="primary"
-            label="Agendar Cita Ahora"
-            class="q-px-xl q-py-md text-subtitle1 shadow-4 hero-btn"
-            unelevated
-            no-caps
-            @click="scrollToAgenda"
-          />
-        </div>
-        <div class="col-12 col-md-6 flex justify-center q-mt-xl q-mt-md-none hero-image-container z-top">
-          <!-- Círculo decorativo simulando imagen clínica -->
-          <div class="hero-image bg-grey-2 shadow-2 flex flex-center">
-             <q-icon name="spa" size="100px" color="secondary" />
+
+          <div class="row q-gutter-md items-center">
+            <q-btn
+              color="primary"
+              label="Agendar Cita Ahora"
+              class="q-px-xl q-py-md text-subtitle1 shadow-6 hero-btn full-width-sm"
+              unelevated
+              no-caps
+              icon-right="arrow_forward"
+              @click="scrollToAgenda"
+            />
           </div>
+        </div>
+
+        <!-- Graphic Content -->
+        <div class="col-12 col-md-6 flex justify-center q-mt-xl q-mt-md-none hero-image-container relative-position" style="z-index: 1;">
+          <div class="hero-image-abstract shadow-10 flex flex-center" :class="$q.dark.isActive ? 'bg-grey-9' : 'bg-primary'">
+             <q-icon name="spa" size="120px" :color="$q.dark.isActive ? 'primary' : 'white'" class="opacity-80" />
+          </div>
+
+          <!-- Floating Glass Card -->
+          <q-card class="floating-glass-card absolute shadow-5" :class="$q.dark.isActive ? 'bg-dark text-white' : 'bg-white'">
+            <q-card-section class="row items-center q-pa-md">
+              <q-avatar size="50px" color="secondary" text-color="white" icon="verified" class="q-mr-md shadow-2" />
+              <div>
+                <div class="text-weight-bold text-subtitle1">Certificación</div>
+                <div class="text-caption" :class="$q.dark.isActive ? 'text-grey-4' : 'text-grey-7'">Consejo Mexicano De Dermatología</div>
+              </div>
+            </q-card-section>
+          </q-card>
         </div>
       </div>
       <!-- Formas decorativas de fondo -->
-      <div class="blob blob-1 bg-secondary opacity-30"></div>
-      <div class="blob blob-2 bg-accent opacity-20"></div>
+      <div class="blob blob-1 opacity-20" :class="$q.dark.isActive ? 'bg-primary' : 'bg-secondary'"></div>
+      <div class="blob blob-2 opacity-10" :class="$q.dark.isActive ? 'bg-secondary' : 'bg-accent'"></div>
     </section>
 
     <!-- Carousel Section -->
-    <section class="carousel-section q-py-xl bg-white">
+    <section class="carousel-section q-py-xl" :class="$q.dark.isActive ? 'bg-dark' : 'bg-white'">
       <div class="max-width-container q-px-md">
         <q-carousel
           v-model="carouselSlide"
@@ -76,10 +99,10 @@
     </section>
 
     <!-- Sección de Confianza -->
-    <section class="trust-section bg-grey-1 q-py-xl text-center">
+    <section class="trust-section q-py-xl text-center" :class="$q.dark.isActive ? 'bg-grey-10' : 'bg-grey-1'">
       <div class="max-width-container q-px-md">
-        <h2 class="text-h5 text-dark text-weight-bold q-mb-xl">
-          Dr. Salvador Sobrevilla Ondarza <span class="text-weight-regular text-grey-7">| Dermatólogo Certificado</span>
+        <h2 class="text-h5 text-weight-bold q-mb-xl" :class="$q.dark.isActive ? 'text-white' : 'text-dark'">
+          Dr. Salvador Sobrevilla Ondarza <span class="text-weight-regular" :class="$q.dark.isActive ? 'text-grey-5' : 'text-grey-7'">| Dermatólogo Certificado</span>
         </h2>
         <div class="row q-col-gutter-lg justify-center">
           <div class="col-12 col-sm-4">
@@ -102,15 +125,15 @@
     </section>
 
     <!-- Sección Interactiva: Agendar Cita -->
-    <section id="seccion-agendar" class="agenda-section q-py-xl bg-grey-1 flex flex-center">
+    <section id="seccion-agendar" class="agenda-section q-py-xl flex flex-center" :class="$q.dark.isActive ? 'bg-grey-9' : 'bg-grey-1'">
       <div class="max-width-container full-width q-px-md">
 
         <div class="text-center q-mb-xl">
-          <h2 class="text-h3 text-dark text-weight-bold q-mb-sm">Agenda tu Cita</h2>
-          <p class="text-subtitle1 text-grey-7">Selecciona el día y horario que mejor te convenga.</p>
+          <h2 class="text-h3 text-weight-bold q-mb-sm" :class="$q.dark.isActive ? 'text-white' : 'text-dark'">Agenda tu Cita</h2>
+          <p class="text-subtitle1" :class="$q.dark.isActive ? 'text-grey-4' : 'text-grey-7'">Selecciona el día y horario que mejor te convenga.</p>
         </div>
 
-        <q-card class="agenda-card shadow-1 q-mx-auto">
+        <q-card class="agenda-card shadow-3 q-mx-auto" :class="$q.dark.isActive ? 'bg-dark text-white' : 'bg-white'">
           <q-card-section class="q-pa-lg q-pa-md-xl">
             <q-stepper
               v-model="step"
@@ -119,6 +142,7 @@
               animated
               flat
               class="bg-transparent"
+              :dark="$q.dark.isActive"
             >
               <!-- Paso 1: Selección de Fecha y Hora -->
               <q-step
@@ -137,11 +161,12 @@
                       @update:model-value="fetchAvailability"
                       flat
                       class="custom-date shadow-1"
+                      :dark="$q.dark.isActive"
                     />
                   </div>
 
                   <div class="col-12 col-md-6">
-                    <div class="text-h6 q-mb-lg text-dark">Horarios Disponibles</div>
+                    <div class="text-h6 q-mb-lg" :class="$q.dark.isActive ? 'text-white' : 'text-dark'">Horarios Disponibles</div>
 
                     <transition mode="out-in" enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
                       <div v-if="loadingSlots" class="flex flex-center q-pa-xl" key="loading">
@@ -207,6 +232,7 @@
                           label="Nombre(s) *"
                           lazy-rules
                           :rules="[val => val && val.length > 0 || 'Requerido']"
+                          :dark="$q.dark.isActive"
                         />
                       </div>
                       <div class="col-12 col-md-6">
@@ -216,6 +242,7 @@
                           label="Apellidos *"
                           lazy-rules
                           :rules="[val => val && val.length > 0 || 'Requerido']"
+                          :dark="$q.dark.isActive"
                         />
                       </div>
                       <div class="col-12 col-md-6">
@@ -226,6 +253,7 @@
                           type="tel"
                           lazy-rules
                           :rules="[val => val && val.length >= 10 || 'Requerido a 10 dígitos mínimo']"
+                          :dark="$q.dark.isActive"
                         />
                       </div>
                       <div class="col-12 col-md-6">
@@ -234,10 +262,11 @@
                           v-model="booking.email"
                           label="Correo Electrónico (Opcional)"
                           type="email"
+                          :dark="$q.dark.isActive"
                         />
                       </div>
                       <div class="col-12">
-                        <div class="text-subtitle2 q-mb-sm text-grey-8">Motivo de consulta *</div>
+                        <div class="text-subtitle2 q-mb-sm" :class="$q.dark.isActive ? 'text-grey-4' : 'text-grey-8'">Motivo de consulta *</div>
                         <q-btn-toggle
                           v-model="booking.type"
                           spread
@@ -245,8 +274,8 @@
                           rounded
                           unelevated
                           toggle-color="primary"
-                          color="grey-2"
-                          text-color="dark"
+                          :color="$q.dark.isActive ? 'grey-9' : 'grey-2'"
+                          :text-color="$q.dark.isActive ? 'white' : 'dark'"
                           :options="typeOptions"
                         />
                       </div>
@@ -257,6 +286,7 @@
                           type="textarea"
                           label="Notas o detalles adicionales"
                           rows="3"
+                          :dark="$q.dark.isActive"
                         />
                       </div>
                     </div>
@@ -292,7 +322,7 @@
 
     <!-- Diálogo de OTP -->
     <q-dialog v-model="showOtpDialog" persistent>
-      <q-card style="min-width: 350px; border-radius: 16px" class="q-pa-none">
+      <q-card style="min-width: 350px; border-radius: 16px" class="q-pa-none" :class="$q.dark.isActive ? 'bg-dark text-white' : 'bg-white'">
         <q-card-section class="bg-primary text-center">
           <q-avatar size="64px" color="white" text-color="primary" icon="mark_chat_read" class="q-mb-md shadow-2" />
           <div class="text-h6 text-weight-bold text-white">Verificación WhatsApp</div>
@@ -311,6 +341,7 @@
             autofocus
             class="text-h6 text-center"
             @keyup.enter="verifyOtpAndBook"
+            :dark="$q.dark.isActive"
           />
         </q-card-section>
 
@@ -480,7 +511,7 @@ const verifyOtpAndBook = async () => {
 
 <style lang="scss" scoped>
 .landing-page {
-  background-color: #FFFFFF;
+  /* background-color: #FFFFFF; Removed to let layout handle background */
 }
 
 .max-width-container {
@@ -491,7 +522,8 @@ const verifyOtpAndBook = async () => {
 /* Hero Section */
 .hero-section {
   overflow: hidden;
-  padding-top: 60px; /* offset for glass header */
+  min-height: 75vh;
+  padding-top: 0;
 }
 
 .hero-title {
@@ -512,11 +544,39 @@ const verifyOtpAndBook = async () => {
   transform: translateY(-3px);
 }
 
-.hero-image {
+.hero-image-abstract {
   width: 400px;
   height: 400px;
-  border-radius: 50%;
-  border: 4px solid white;
+  border-radius: 40px 140px 40px 140px;
+  border: 8px solid rgba(255, 255, 255, 0.15);
+  transition: all 0.5s ease;
+  animation: morphing 10s ease-in-out infinite;
+}
+
+@keyframes morphing {
+  0% { border-radius: 40px 140px 40px 140px; }
+  50% { border-radius: 140px 40px 140px 40px; }
+  100% { border-radius: 40px 140px 40px 140px; }
+}
+
+.floating-glass-card {
+  bottom: 30px;
+  left: -30px;
+  border-radius: 16px;
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  background: rgba(255, 255, 255, 0.85); /* Default fallback */
+  animation: float 5s ease-in-out infinite;
+}
+
+.bg-dark.floating-glass-card {
+  background: rgba(30, 30, 30, 0.85) !important;
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+  100% { transform: translateY(0px); }
 }
 
 /* Blobs Backgrounds */
@@ -555,7 +615,7 @@ const verifyOtpAndBook = async () => {
 
 .custom-date {
   border-radius: 16px;
-  background-color: #FFFFFF;
+  /* background-color: #FFFFFF; Removed to adapt to dark mode natively */
 }
 
 .time-slot-btn {
@@ -576,7 +636,7 @@ const verifyOtpAndBook = async () => {
 
 .custom-caption {
   text-align: center;
-  padding: 24px;
+  padding: 24px 24px 48px 24px;
   background-color: transparent;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9), 0 4px 20px rgba(0, 0, 0, 0.7);
 }
