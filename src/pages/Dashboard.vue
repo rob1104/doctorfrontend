@@ -1158,6 +1158,13 @@ onMounted(async () => {
         const appointment = e.appointment
         appointments.value.unshift(appointment)
       })
+      .listen('AppointmentUpdated', (e) => {
+        const appointment = e.appointment
+        const index = appointments.value.findIndex(a => a.id === appointment.id)
+        if (index !== -1) {
+          appointments.value[index] = appointment
+        }
+      })
       .listen('WhatsAppMessageReceived', (e) => {
         const msg = e.message
         // Si el chat está abierto y es de este paciente
