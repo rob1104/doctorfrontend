@@ -38,8 +38,8 @@
       <router-view />
     </q-page-container>
 
-    <!-- Mobile Sticky CTA -->
-    <q-page-sticky position="bottom-right" :offset="[18, 18]" class="lt-sm" style="z-index: 2000;">
+    <!-- Mobile Sticky CTA (Agendar) -->
+    <q-page-sticky position="bottom-right" :offset="[18, 88]" class="lt-sm" style="z-index: 2000;">
       <q-btn
         fab
         icon="event"
@@ -50,15 +50,40 @@
         <q-tooltip>Agendar Cita</q-tooltip>
       </q-btn>
     </q-page-sticky>
+
+    <!-- AI Assistant Sticky CTA (Global) -->
+    <q-page-sticky position="bottom-right" :offset="[18, 18]" style="z-index: 2000;">
+      <q-btn
+        rounded
+        unelevated
+        icon="support_agent"
+        label="Asistente Virtual"
+        color="secondary"
+        @click="aiChatOpen = true"
+        class="shadow-4 q-py-sm q-px-md text-weight-bold"
+        no-caps
+      >
+        <q-tooltip>Asistente de IA</q-tooltip>
+      </q-btn>
+    </q-page-sticky>
+
+    <!-- AI Assistant Dialog -->
+    <q-dialog v-model="aiChatOpen" :position="$q.screen.lt.sm ? 'standard' : 'bottom'" :maximized="$q.screen.lt.sm" transition-show="slide-up" transition-hide="slide-down">
+      <div :class="$q.screen.lt.sm ? 'bg-white window-width' : 'bg-white'" :style="$q.screen.lt.sm ? 'height: 100dvh; display: flex; flex-direction: column;' : 'width: 100%; max-width: 400px; height: 70vh; max-height: 600px; border-radius: 12px 12px 0 0; overflow: hidden; display: flex; flex-direction: column;'">
+        <AIChat @close="aiChatOpen = false" style="flex-grow: 1;" />
+      </div>
+    </q-dialog>
   </q-layout>
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useQuasar } from 'quasar'
+import AIChat from '../components/ai/AIChat.vue'
 
 const $q = useQuasar()
 const scrolled = ref(false)
+const aiChatOpen = ref(false)
 
 const handleScroll = () => {
   scrolled.value = window.scrollY > 50

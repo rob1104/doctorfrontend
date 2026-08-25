@@ -353,8 +353,26 @@ const save = async () => {
     emit('saved')
 
   } catch (error) {
-    console.error(error)
-    $q.notify({ color: 'negative', message: 'Hubo un error al registrar la consulta' })
+    console.error('Save Consultation Error:', error)
+    if (error.response && error.response.status === 422 && error.response.data.errors) {
+      const errors = error.response.data.errors
+      let errorMsg = '<strong>Revisa los datos capturados:</strong><br><ul style="margin:0; padding-left:20px;">'
+      Object.values(errors).forEach(errArray => {
+        errorMsg += `<li>${errArray[0]}</li>`
+      })
+      errorMsg += '</ul>'
+      
+      $q.notify({ 
+        color: 'negative', 
+        message: errorMsg, 
+        html: true, 
+        position: 'top', 
+        icon: 'warning',
+        timeout: 6000
+      })
+    } else {
+      $q.notify({ color: 'negative', message: 'Hubo un error inesperado al registrar la consulta', position: 'top', icon: 'error' })
+    }
   } finally {
     saving.value = false
   }
@@ -401,8 +419,25 @@ const saveNewMedication = async () => {
     isNewMedicationDialogOpen.value = false
     $q.notify({ color: 'positive', icon: 'check_circle', message: 'Medicamento guardado en el catálogo' })
   } catch (error) {
-    console.error(error)
-    $q.notify({ color: 'negative', message: 'Revisa los campos requeridos' })
+    console.error('Save Medication Error:', error)
+    if (error.response && error.response.status === 422 && error.response.data.errors) {
+      const errors = error.response.data.errors
+      let errorMsg = '<strong>Error en el medicamento:</strong><br><ul style="margin:0; padding-left:20px;">'
+      Object.values(errors).forEach(errArray => {
+        errorMsg += `<li>${errArray[0]}</li>`
+      })
+      errorMsg += '</ul>'
+      
+      $q.notify({ 
+        color: 'negative', 
+        message: errorMsg, 
+        html: true, 
+        position: 'top', 
+        icon: 'warning'
+      })
+    } else {
+      $q.notify({ color: 'negative', message: 'Revisa los campos requeridos', position: 'top' })
+    }
   } finally {
     savingMedication.value = false
   }

@@ -125,8 +125,12 @@
     </section>
 
     <!-- Sección Interactiva: Agendar Cita -->
-    <section id="seccion-agendar" class="agenda-section q-py-xl flex flex-center" :class="$q.dark.isActive ? 'bg-grey-9' : 'bg-grey-1'">
-      <div class="max-width-container full-width q-px-md">
+    <section id="seccion-agendar" class="agenda-section q-py-xl flex flex-center relative-position overflow-hidden" :class="$q.dark.isActive ? 'bg-dark' : 'bg-grey-1'">
+      <!-- Formas decorativas de fondo -->
+      <div class="agenda-blob agenda-blob-1 opacity-20" :class="$q.dark.isActive ? 'bg-primary' : 'bg-secondary'"></div>
+      <div class="agenda-blob agenda-blob-2 opacity-10" :class="$q.dark.isActive ? 'bg-secondary' : 'bg-accent'"></div>
+
+      <div class="max-width-container full-width q-px-md relative-position" style="z-index: 1;">
 
         <div class="text-center q-mb-xl">
           <h2 class="text-h3 text-weight-bold q-mb-sm" :class="$q.dark.isActive ? 'text-white' : 'text-dark'">Agenda tu Cita</h2>
@@ -602,12 +606,53 @@ const verifyOtpAndBook = async () => {
   min-height: 80vh;
 }
 
+.agenda-blob {
+  position: absolute;
+  filter: blur(100px);
+  z-index: 0;
+  border-radius: 50%;
+}
+.agenda-blob-1 {
+  width: 500px;
+  height: 500px;
+  top: -150px;
+  left: -200px;
+}
+.agenda-blob-2 {
+  width: 400px;
+  height: 400px;
+  bottom: -100px;
+  right: -100px;
+}
+
 .agenda-card {
   width: 100%;
   max-width: 900px;
-  border: none !important;
-  border-radius: 20px !important;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.03) !important;
+  border: 1px solid rgba(128, 128, 128, 0.1) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.95);
+  position: relative;
+  overflow: hidden;
+}
+
+.agenda-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--q-primary), var(--q-secondary));
+  z-index: 10;
+}
+
+.bg-dark.agenda-card {
+  background: rgba(30, 30, 30, 0.8) !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
 }
 
 .custom-date {

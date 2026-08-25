@@ -910,7 +910,17 @@ const saveClinicalData = async () => {
     editClinicalData.value = false
     fetchPatient()
   } catch (error) {
-    $q.notify({ color: 'negative', message: 'Error al guardar datos' })
+    if (error.response && error.response.status === 422 && error.response.data.errors) {
+      const errors = error.response.data.errors
+      let errorMsg = '<strong>Revisa los siguientes campos:</strong><br><ul style="margin:0; padding-left:20px;">'
+      Object.values(errors).forEach(errArray => {
+        errorMsg += `<li>${errArray[0]}</li>`
+      })
+      errorMsg += '</ul>'
+      $q.notify({ color: 'negative', message: errorMsg, html: true, position: 'top', icon: 'warning', timeout: 5000 })
+    } else {
+      $q.notify({ color: 'negative', message: 'Error al guardar datos', position: 'top' })
+    }
   } finally {
     savingClinical.value = false
   }

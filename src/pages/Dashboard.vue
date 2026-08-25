@@ -75,7 +75,7 @@
           <q-card-section class="row items-center">
             <q-avatar size="50px" color="red-1" text-color="red-8" icon="cancel" class="q-mr-md" />
             <div>
-              <div class="text-overline text-grey-6 text-weight-bold" style="line-height: 1.2;">CANCELADAS</div>
+              <div class="text-overline text-grey-6 text-weight-bold" style="line-height: 1.2;">REAGENDADAS</div>
               <div class="text-h4 text-weight-bold text-dark">{{ canceledCount }}</div>
             </div>
           </q-card-section>
@@ -215,10 +215,10 @@
 
               <q-btn
                 v-if="props.row.status !== 'canceled'"
-                flat round color="negative" icon="cancel" size="md"
+                flat round color="negative" icon="edit_calendar" size="md"
                 @click="promptCancel(props.row)"
               >
-                <q-tooltip class="bg-dark">Cancelar Cita</q-tooltip>
+                <q-tooltip class="bg-dark">Reagendar / Bloquear Espacio</q-tooltip>
               </q-btn>
             </q-td>
           </template>
@@ -261,42 +261,72 @@
 
         <!-- VISTA: AGENDA -->
         <div v-else-if="viewMode === 'agenda'" class="agenda-view q-mt-md">
-          <div class="row items-center q-mb-lg">
-            <q-input v-model="agendaDate" type="date" outlined dense class="q-mr-md" />
-            <div class="text-h6 text-weight-bold">Agenda del {{ formatDateNatural(agendaDate) }}</div>
+          <div class="row items-center justify-between q-mb-lg">
+            <div class="row items-center">
+              <q-input v-model="agendaDate" type="date" outlined dense class="q-mr-md" />
+              <div class="text-h6 text-weight-bold">Agenda del {{ formatDateNatural(agendaDate) }}</div>
+            </div>
+            <q-toggle v-model="editAvailabilityMode" label="Modo Edición de Disponibilidad" color="negative" />
           </div>
 
-          <div v-if="agendaAppointments.length === 0" class="text-center text-grey-6 q-pa-xl" style="border: 2px dashed #ccc; border-radius: 8px;">
-            No hay citas programadas para este día.
+          <!-- MODO EDICION DISPONIBILIDAD -->
+          <div v-if="editAvailabilityMode" class="q-mt-md">
+            <div class="text-subtitle1 text-weight-bold q-mb-sm text-negative">
+              <q-icon name="warning" class="q-mr-xs" />
+              Estás en modo edición. Apaga el interruptor para bloquear el horario.
+            </div>
+            <div class="row q-col-gutter-sm">
+              <div class="col-12 col-sm-6 col-md-4 col-lg-3" v-for="slot in agendaTimeSlots" :key="slot.time">
+                <q-card flat bordered :class="slot.is_blocked ? 'bg-red-1' : 'bg-green-1'">
+                  <q-card-section class="row items-center justify-between q-pa-sm">
+                    <div class="text-weight-bold">{{ slot.time }}</div>
+                    <q-toggle
+                      :model-value="!slot.is_blocked"
+                      @update:model-value="val => toggleBlockedSlot(slot.time, !val)"
+                      color="positive"
+                      checked-icon="check"
+                      unchecked-icon="block"
+                    />
+                  </q-card-section>
+                </q-card>
+              </div>
+            </div>
           </div>
 
-          <q-timeline v-else color="primary">
-            <q-timeline-entry
-              v-for="app in agendaAppointments"
-              :key="app.id"
-              :title="`${app.start_time.substring(0,5)} - ${app.patient.first_name} ${app.patient.last_name}`"
-              :subtitle="formatStatus(app.status)"
-              :color="getStatusTextColor(app.status)"
-              :icon="getStatusIcon(app.status)"
-            >
-              <q-card flat bordered class="q-mt-sm shadow-1">
-                <q-card-section class="row justify-between items-center">
-                  <div>
-                    <div class="text-weight-bold">{{ app.type === 'clinico' ? 'Consulta Clínica' : 'Consulta Estética' }}</div>
-                    <div class="text-grey-7">{{ app.notes || 'Sin notas adicionales' }}</div>
-                  </div>
-                  <div>
-                    <q-btn flat round color="primary" icon="chat" size="sm" @click="openChat(app)">
-                      <q-tooltip>Contactar</q-tooltip>
-                    </q-btn>
-                    <q-btn flat round color="info" icon="info" size="sm" @click="openAppointmentDetails(app)">
-                      <q-tooltip>Ver Detalles</q-tooltip>
-                    </q-btn>
-                  </div>
-                </q-card-section>
-              </q-card>
-            </q-timeline-entry>
-          </q-timeline>
+          <!-- MODO NORMAL AGENDA -->
+          <div v-else>
+            <div v-if="agendaAppointments.length === 0" class="text-center text-grey-6 q-pa-xl" style="border: 2px dashed #ccc; border-radius: 8px;">
+              No hay citas programadas para este día.
+            </div>
+
+            <q-timeline v-else color="primary">
+              <q-timeline-entry
+                v-for="app in agendaAppointments"
+                :key="app.id"
+                :title="`${app.start_time.substring(0,5)} - ${app.patient.first_name} ${app.patient.last_name}`"
+                :subtitle="formatStatus(app.status)"
+                :color="getStatusTextColor(app.status)"
+                :icon="getStatusIcon(app.status)"
+              >
+                <q-card flat bordered class="q-mt-sm shadow-1">
+                  <q-card-section class="row justify-between items-center">
+                    <div>
+                      <div class="text-weight-bold">{{ app.type === 'clinico' ? 'Consulta Clínica' : 'Consulta Estética' }}</div>
+                      <div class="text-grey-7">{{ app.notes || 'Sin notas adicionales' }}</div>
+                    </div>
+                    <div>
+                      <q-btn flat round color="primary" icon="chat" size="sm" @click="openChat(app)">
+                        <q-tooltip>Contactar</q-tooltip>
+                      </q-btn>
+                      <q-btn flat round color="info" icon="info" size="sm" @click="openAppointmentDetails(app)">
+                        <q-tooltip>Ver Detalles</q-tooltip>
+                      </q-btn>
+                    </div>
+                  </q-card-section>
+                </q-card>
+              </q-timeline-entry>
+            </q-timeline>
+          </div>
         </div>
       </q-card-section>
     </q-card>
@@ -418,29 +448,28 @@
           </div>
           <div>
             <q-btn v-if="selectedAppointment.status === 'pending'" flat color="positive" icon="check_circle" label="Confirmar" @click="updateStatus(selectedAppointment.id, 'approved')" />
-            <q-btn v-if="selectedAppointment.status !== 'canceled'" flat color="negative" icon="cancel" label="Cancelar" @click="promptCancel(selectedAppointment)" />
+            <q-btn v-if="selectedAppointment.status !== 'canceled'" flat color="negative" icon="edit_calendar" label="Reagendar" @click="promptCancel(selectedAppointment)" />
           </div>
         </q-card-actions>
       </q-card>
     </q-dialog>
 
-    <!-- Dialogo para Confirmar Cancelación -->
+    <!-- Dialogo para Confirmar Reagendamiento / Bloqueo -->
     <q-dialog v-model="cancelDialog" persistent>
       <q-card style="width: 400px; border-radius: 12px;">
         <q-card-section class="bg-negative text-white row items-center">
           <q-icon name="warning" size="md" class="q-mr-sm" />
-          <div class="text-h6 text-white">Cancelar Cita</div>
+          <div class="text-h6 text-white">Reagendar / Bloquear Cita</div>
         </q-card-section>
         
         <q-card-section class="q-pt-md">
-          <div class="q-mb-md">¿Estás seguro de que deseas cancelar la cita de <strong>{{ appointmentToCancel?.patient.first_name }}</strong>?</div>
-          <q-input v-model="cancelReason" type="textarea" label="Motivo de cancelación (Opcional)" outlined dense autogrow rows="2" class="q-mb-md" autofocus />
-          <q-checkbox v-model="rescheduleAfterCancel" label="Reagendar una nueva cita inmediatamente" color="primary" />
+          <div class="q-mb-md">¿Estás seguro de que deseas liberar este espacio y pedirle a <strong>{{ appointmentToCancel?.patient.first_name }}</strong> que reagende su cita? (Esto bloqueará la hora en el sistema y se le enviará un mensaje de WhatsApp).</div>
+          <q-input v-model="cancelReason" type="textarea" label="Motivo (Opcional - se enviará al paciente)" outlined dense autogrow rows="2" class="q-mb-md" autofocus />
         </q-card-section>
 
         <q-card-actions align="right" class="q-pa-md">
           <q-btn flat label="Atrás" color="grey-8" v-close-popup />
-          <q-btn unelevated label="Confirmar Cancelación" color="negative" @click="confirmCancel" :loading="canceling" />
+          <q-btn unelevated label="Confirmar Reagendamiento" color="negative" @click="confirmCancel" :loading="canceling" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -663,6 +692,79 @@ const agendaDate = ref(new Date().toISOString().split('T')[0])
 const agendaAppointments = computed(() => {
   return appointments.value.filter(a => a.appointment_date === agendaDate.value).sort((a,b) => a.start_time.localeCompare(b.start_time))
 })
+
+// Edit Availability Logic
+const editAvailabilityMode = ref(false)
+const blockedSlotsForDate = ref([])
+
+const fetchBlockedSlots = async () => {
+  try {
+    const response = await api.get(`/availability/blocked?date=${agendaDate.value}`)
+    blockedSlotsForDate.value = response.data
+  } catch (error) {
+    console.error('Error fetching blocked slots:', error)
+  }
+}
+
+watch(agendaDate, () => {
+  if (editAvailabilityMode.value) {
+    fetchBlockedSlots()
+  }
+})
+
+watch(editAvailabilityMode, (val) => {
+  if (val) {
+    fetchBlockedSlots()
+  }
+})
+
+const agendaTimeSlots = computed(() => {
+  const slots = []
+  let currentHour = 9
+  let currentMin = 0
+  
+  while (currentHour < 17) {
+    const timeStr = `${String(currentHour).padStart(2, '0')}:${String(currentMin).padStart(2, '0')}`
+    
+    // Check if it's blocked manually
+    const isBlocked = blockedSlotsForDate.value.some(b => b.start_time.substring(0,5) === timeStr)
+    
+    slots.push({
+      time: timeStr,
+      is_blocked: isBlocked
+    })
+    
+    currentMin += 30
+    if (currentMin >= 60) {
+      currentMin = 0
+      currentHour++
+    }
+  }
+  return slots
+})
+
+const toggleBlockedSlot = async (timeStr, isAvailable) => {
+  try {
+    await api.post('/availability/toggle', {
+      date: agendaDate.value,
+      start_time: timeStr,
+      is_blocked: !isAvailable // if user toggles off (available=false), we want to block it (is_blocked=true)
+    })
+    
+    // Update local state directly to feel instant
+    if (!isAvailable) {
+      blockedSlotsForDate.value.push({ start_time: timeStr + ':00', date: agendaDate.value })
+    } else {
+      blockedSlotsForDate.value = blockedSlotsForDate.value.filter(b => b.start_time.substring(0,5) !== timeStr)
+    }
+    
+    $q.notify({ color: 'positive', message: isAvailable ? 'Horario disponible' : 'Horario bloqueado', position: 'top-right' })
+  } catch (error) {
+    console.error('Error toggling availability:', error)
+    $q.notify({ color: 'negative', message: 'Error al cambiar disponibilidad' })
+    await fetchBlockedSlots() // revert UI
+  }
+}
 
 // Cancel and Reschedule Logic
 const newAppointmentDialog = ref(false)
@@ -949,7 +1051,7 @@ const formatStatus = (status) => {
   switch(status) {
     case 'approved': return 'Confirmada'
     case 'pending': return 'En Revisión'
-    case 'canceled': return 'Cancelada'
+    case 'canceled': return 'Reagendada'
     default: return status
   }
 }
