@@ -540,14 +540,25 @@
                           <template v-slot:prepend><q-icon name="work" size="xs" color="teal-5" /></template>
                         </q-input>
                       </div>
+                      <div class="col-12">
+                        <div class="row no-wrap">
+                          <q-select v-model="clinicalForm.country_code" :options="[{label:'🇲🇽 +52', value:'+52'}, {label:'🇺🇸 +1', value:'+1'}]" outlined dense emit-value map-options style="width: 110px" class="q-mr-sm" />
+                          <q-input class="col" v-model="clinicalForm.phone" label="Teléfono del Paciente (WhatsApp)" outlined dense hide-bottom-space mask="(###) ###-####" unmasked-value>
+                            <template v-slot:prepend><q-icon name="whatsapp" size="xs" color="positive" /></template>
+                          </q-input>
+                        </div>
+                      </div>
                       <div class="col-12 text-subtitle2 text-grey-8 q-mt-sm q-mb-none" style="line-height: 1;">Contacto de Emergencia</div>
                       <div class="col-12 col-sm-6">
                         <q-input v-model="clinicalForm.emergency_contact_name" label="Nombre" outlined dense hide-bottom-space />
                       </div>
-                      <div class="col-12 col-sm-6">
-                        <q-input v-model="clinicalForm.emergency_contact_phone" label="Teléfono" outlined dense hide-bottom-space>
-                          <template v-slot:prepend><q-icon name="emergency" size="xs" color="red-4" /></template>
-                        </q-input>
+                      <div class="col-12">
+                        <div class="row no-wrap">
+                          <q-select v-model="clinicalForm.emergency_country_code" :options="[{label:'🇲🇽 +52', value:'+52'}, {label:'🇺🇸 +1', value:'+1'}]" outlined dense emit-value map-options style="width: 110px" class="q-mr-sm" />
+                          <q-input class="col" v-model="clinicalForm.emergency_contact_phone" label="Teléfono de Emergencia" outlined dense hide-bottom-space mask="(###) ###-####" unmasked-value>
+                            <template v-slot:prepend><q-icon name="emergency" size="xs" color="red-4" /></template>
+                          </q-input>
+                        </div>
                       </div>
                     </div>
                   </q-card-section>
@@ -759,9 +770,28 @@ const formatFullAddress = (p) => {
 
 const formatPhoneNumber = (phoneStr) => {
   if (!phoneStr) return ''
-  const cleaned = ('' + phoneStr).replace(/\D/g, '')
+  // Si tiene el prefijo de país, separar el prefijo y formatear los últimos 10 dígitos
+  const str = String(phoneStr).trim();
+  if (str.startsWith('+')) {
+    const spaceIndex = str.indexOf(' ');
+    let code = '', number = '';
+    if (spaceIndex !== -1) {
+       code = str.substring(0, spaceIndex);
+       number = str.substring(spaceIndex + 1).replace(/\D/g, '');
+    } else {
+       // heuristica básica
+       if (str.startsWith('+1')) { code = '+1'; number = str.substring(2).replace(/\D/g, ''); }
+       else if (str.startsWith('+52')) { code = '+52'; number = str.substring(3).replace(/\D/g, ''); }
+       else { return str; }
+    }
+    const match = number.match(/^(\d{3})(\d{3})(\d{4})$/)
+    if (match) return `${code} (${match[1]}) ${match[2]}-${match[3]}`
+    return str
+  }
+
+  const cleaned = str.replace(/\D/g, '')
   const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/)
-  if (match) return `(${match[1]}) ${match[2]}-${match[3]}`
+  if (match) return `+52 (${match[1]}) ${match[2]}-${match[3]}`
   return phoneStr
 }
 
@@ -842,7 +872,10 @@ const clinicalForm = ref({
   state: '',
   country: 'México',
   place_of_birth: '',
+  phone: '',
+  country_code: '+52',
   emergency_contact_name: '',
+  emergency_country_code: '+52',
   emergency_contact_phone: '',
   marital_status: '',
   occupation: '',
@@ -867,6 +900,21 @@ const fetchPatient = async () => {
   try {
     const { data } = await api.get(`/patients/${patientId}`)
     patient.value = data
+
+    let emergency_country_code = '+52';
+    let emergency_phone = data.emergency_contact_phone || '';
+    if (emergency_phone) {
+      emergency_country_code = String(emergency_phone).startsWith('+1') ? '+1' : '+52';
+      emergency_phone = String(emergency_phone).replace(/\D/g, '').slice(-10);
+    }
+    
+    let main_country_code = '+52';
+    let main_phone = data.phone || '';
+    if (main_phone) {
+      main_country_code = String(main_phone).startsWith('+1') ? '+1' : '+52';
+      main_phone = String(main_phone).replace(/\D/g, '').slice(-10);
+    }
+
     clinicalForm.value = {
       blood_type: data.blood_type || '',
       skin_type: data.skin_type || '',
@@ -882,8 +930,11 @@ const fetchPatient = async () => {
       state: data.state || '',
       country: data.country || 'México',
       place_of_birth: data.place_of_birth || '',
+      phone: main_phone,
+      country_code: main_country_code,
       emergency_contact_name: data.emergency_contact_name || '',
-      emergency_contact_phone: data.emergency_contact_phone || '',
+      emergency_country_code: emergency_country_code,
+      emergency_contact_phone: emergency_phone,
       marital_status: data.marital_status || '',
       occupation: data.occupation || '',
       current_medications: data.current_medications || '',
@@ -905,7 +956,15 @@ const fetchPatient = async () => {
 const saveClinicalData = async () => {
   savingClinical.value = true
   try {
-    await api.put(`/patients/${patientId}`, clinicalForm.value)
+    const payload = { ...clinicalForm.value }
+    if (payload.emergency_contact_phone) {
+      payload.emergency_contact_phone = (payload.emergency_country_code || '+52') + payload.emergency_contact_phone.replace(/\D/g, '')
+    }
+    if (payload.phone) {
+      payload.phone = (payload.country_code || '+52') + payload.phone.replace(/\D/g, '')
+    }
+
+    await api.put(`/patients/${patientId}`, payload)
     $q.notify({ color: 'positive', message: 'Datos actualizados' })
     editClinicalData.value = false
     fetchPatient()

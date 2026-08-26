@@ -198,10 +198,13 @@
                   <div class="col-12 col-sm-6">
                     <q-input v-model="form.last_name" label="Apellidos *" outlined dense hide-bottom-space lazy-rules :rules="[val => !!val || 'Requerido']" />
                   </div>
-                  <div class="col-12 col-sm-6">
-                    <q-input v-model="form.phone" label="Teléfono WhatsApp *" outlined dense hide-bottom-space mask="(###) ###-####" unmasked-value lazy-rules :rules="[val => !!val || 'Requerido']">
-                      <template v-slot:prepend><q-icon name="phone" size="xs" color="grey-6" /></template>
-                    </q-input>
+                  <div class="col-12">
+                    <div class="row no-wrap">
+                      <q-select v-model="form.country_code" :options="[{label:'🇲🇽 +52', value:'+52'}, {label:'🇺🇸 +1', value:'+1'}]" outlined dense emit-value map-options style="width: 110px" class="q-mr-sm" />
+                      <q-input class="col" v-model="form.phone" label="Teléfono WhatsApp *" outlined dense hide-bottom-space mask="(###) ###-####" unmasked-value lazy-rules :rules="[val => !!val || 'Requerido']">
+                        <template v-slot:prepend><q-icon name="whatsapp" color="positive" size="xs" /></template>
+                      </q-input>
+                    </div>
                   </div>
                   <div class="col-12 col-sm-6">
                     <q-input v-model="form.email" type="email" label="Correo Electrónico" outlined dense hide-bottom-space>
@@ -268,10 +271,13 @@
                   <div class="col-12 col-sm-6">
                     <q-input v-model="form.emergency_contact_name" label="Nombre Completo" outlined dense hide-bottom-space />
                   </div>
-                  <div class="col-12 col-sm-6">
-                    <q-input v-model="form.emergency_contact_phone" label="Teléfono de Emergencia" outlined dense hide-bottom-space mask="(###) ###-####" unmasked-value>
-                      <template v-slot:prepend><q-icon name="emergency" size="xs" color="red-4" /></template>
-                    </q-input>
+                  <div class="col-12">
+                    <div class="row no-wrap">
+                      <q-select v-model="form.emergency_country_code" :options="[{label:'🇲🇽 +52', value:'+52'}, {label:'🇺🇸 +1', value:'+1'}]" outlined dense emit-value map-options style="width: 110px" class="q-mr-sm" />
+                      <q-input class="col" v-model="form.emergency_contact_phone" label="Teléfono de Emergencia" outlined dense hide-bottom-space mask="(###) ###-####" unmasked-value>
+                        <template v-slot:prepend><q-icon name="emergency" size="xs" color="red-4" /></template>
+                      </q-input>
+                    </div>
                   </div>
                 </div>
               </q-card-section>
@@ -430,10 +436,10 @@ const appointmentForm = ref({
 
 const getBaseForm = () => ({
   id: null,
-  first_name: '', last_name: '', phone: '', email: '', 
+  first_name: '', last_name: '', phone: '', country_code: '+52', email: '', 
   address: '', neighborhood: '', zip_code: '', city: '', state: '', country: 'México', place_of_birth: '',
   date_of_birth: '', gender: '', marital_status: '', occupation: '',
-  emergency_contact_name: '', emergency_contact_phone: '',
+  emergency_contact_name: '', emergency_contact_phone: '', emergency_country_code: '+52',
   blood_type: '', allergies: '', chronic_conditions: '', current_medications: '',
   surgical_history: '', family_history: '',
   skin_type: '', skin_tendency: '', sun_exposure_level: '',
@@ -537,8 +543,19 @@ const openCreateDialog = () => {
 
 const openEditDialog = (patient) => {
   isEditing.value = true
-  // Merge to ensure missing fields exist
-  form.value = { ...getBaseForm(), ...patient }
+  const formData = { ...getBaseForm(), ...patient }
+  
+  if (formData.phone) {
+    formData.country_code = String(formData.phone).startsWith('+1') ? '+1' : '+52'
+    formData.phone = String(formData.phone).replace(/\D/g, '').slice(-10)
+  }
+  
+  if (formData.emergency_contact_phone) {
+    formData.emergency_country_code = String(formData.emergency_contact_phone).startsWith('+1') ? '+1' : '+52'
+    formData.emergency_contact_phone = String(formData.emergency_contact_phone).replace(/\D/g, '').slice(-10)
+  }
+
+  form.value = formData
   formDialog.value = true
 }
 
@@ -551,11 +568,17 @@ const submitForm = () => {
 const savePatient = async () => {
   saving.value = true
   try {
+    const payload = { ...form.value }
+    payload.phone = (payload.country_code || '+52') + payload.phone.replace(/\D/g, '')
+    if (payload.emergency_contact_phone) {
+      payload.emergency_contact_phone = (payload.emergency_country_code || '+52') + payload.emergency_contact_phone.replace(/\D/g, '')
+    }
+
     if (isEditing.value) {
-      await api.put(`/patients/${form.value.id}`, form.value)
+      await api.put(`/patients/${payload.id}`, payload)
       $q.notify({ color: 'positive', message: 'Paciente actualizado correctamente', icon: 'check_circle' })
     } else {
-      await api.post('/patients', form.value)
+      await api.post('/patients', payload)
       $q.notify({ color: 'positive', message: 'Paciente creado exitosamente', icon: 'check_circle' })
     }
     formDialog.value = false

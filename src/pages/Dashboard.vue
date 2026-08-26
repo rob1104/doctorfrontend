@@ -21,17 +21,24 @@
         </q-chip>
       </div>
       
-      <div class="row items-center q-gutter-sm">
-        <q-btn flat color="primary" label="Hoy" size="sm" class="text-weight-bold" @click="resetKpiToToday" />
-        <q-btn outline color="primary" icon="date_range" label="Histórico" no-caps class="bg-white">
-          <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-            <q-date v-model="kpiDateRange" range mask="YYYY-MM-DD" color="primary">
-              <div class="row items-center justify-end">
-                <q-btn v-close-popup label="Aplicar Rango" color="primary" flat />
-              </div>
-            </q-date>
-          </q-popup-proxy>
-        </q-btn>
+      <div class="row items-center bg-white rounded-borders shadow-1 q-pa-xs">
+        <q-btn-group flat rounded>
+          <q-btn :color="kpiFilter === 'today' ? 'primary' : 'grey-7'" :flat="kpiFilter !== 'today'" label="Hoy" no-caps size="sm" class="text-weight-bold" @click="setKpiFilter('today')" />
+          <q-btn :color="kpiFilter === 'week' ? 'primary' : 'grey-7'" :flat="kpiFilter !== 'week'" label="Semana" no-caps size="sm" class="text-weight-bold" @click="setKpiFilter('week')" />
+          <q-btn :color="kpiFilter === 'month' ? 'primary' : 'grey-7'" :flat="kpiFilter !== 'month'" label="Mes" no-caps size="sm" class="text-weight-bold" @click="setKpiFilter('month')" />
+          
+          <q-separator vertical class="q-mx-xs" />
+          
+          <q-btn :color="kpiFilter === 'custom' ? 'primary' : 'grey-7'" :flat="kpiFilter !== 'custom'" icon="date_range" label="Histórico" no-caps size="sm" class="text-weight-bold">
+            <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+              <q-date v-model="kpiDateRange" range mask="YYYY-MM-DD" color="primary">
+                <div class="row items-center justify-end">
+                  <q-btn v-close-popup label="Aplicar Rango" color="primary" flat @click="kpiFilter = 'custom'" />
+                </div>
+              </q-date>
+            </q-popup-proxy>
+          </q-btn>
+        </q-btn-group>
       </div>
     </div>
 
@@ -271,9 +278,15 @@
 
           <!-- MODO EDICION DISPONIBILIDAD -->
           <div v-if="editAvailabilityMode" class="q-mt-md">
-            <div class="text-subtitle1 text-weight-bold q-mb-sm text-negative">
-              <q-icon name="warning" class="q-mr-xs" />
-              Estás en modo edición. Apaga el interruptor para bloquear el horario.
+            <div class="row items-center justify-between q-mb-md">
+              <div class="text-subtitle1 text-weight-bold text-negative row items-center">
+                <q-icon name="warning" class="q-mr-xs" size="sm" />
+                <span>Estás en modo edición. Apaga el interruptor para bloquear el horario.</span>
+              </div>
+              <q-btn-group rounded outline>
+                <q-btn color="negative" icon="block" label="Bloquear Todo" size="sm" @click="blockAllDay" />
+                <q-btn color="positive" icon="check_circle" label="Liberar Todo" size="sm" @click="unblockAllDay" />
+              </q-btn-group>
             </div>
             <div class="row q-col-gutter-sm">
               <div class="col-12 col-sm-6 col-md-4 col-lg-3" v-for="slot in agendaTimeSlots" :key="slot.time">
@@ -282,7 +295,7 @@
                     <div class="text-weight-bold">{{ slot.time }}</div>
                     <q-toggle
                       :model-value="!slot.is_blocked"
-                      @update:model-value="val => toggleBlockedSlot(slot.time, !val)"
+                      @update:model-value="val => toggleBlockedSlot(slot.time, val)"
                       color="positive"
                       checked-icon="check"
                       unchecked-icon="block"
@@ -554,7 +567,11 @@
               <q-input v-model="newApptForm.last_name" label="Apellidos" outlined dense />
             </div>
             <div class="col-12">
-              <q-input v-model="newApptForm.phone" label="Teléfono (WhatsApp)" outlined dense mask="##########" />
+              <q-input v-model="newApptForm.phone" label="Teléfono (WhatsApp)" outlined dense mask="(###) ###-####" unmasked-value>
+                <template v-slot:prepend>
+                  <q-select v-model="newApptForm.country_code" :options="[{label:'🇲🇽 +52', value:'+52'}, {label:'🇺🇸 +1', value:'+1'}]" dense borderless emit-value map-options style="width: 85px" class="text-body2" />
+                </template>
+              </q-input>
             </div>
           </div>
 
@@ -748,21 +765,52 @@ const toggleBlockedSlot = async (timeStr, isAvailable) => {
     await api.post('/availability/toggle', {
       date: agendaDate.value,
       start_time: timeStr,
-      is_blocked: !isAvailable // if user toggles off (available=false), we want to block it (is_blocked=true)
+      is_blocked: !isAvailable
     })
     
-    // Update local state directly to feel instant
     if (!isAvailable) {
       blockedSlotsForDate.value.push({ start_time: timeStr + ':00', date: agendaDate.value })
     } else {
       blockedSlotsForDate.value = blockedSlotsForDate.value.filter(b => b.start_time.substring(0,5) !== timeStr)
     }
-    
-    $q.notify({ color: 'positive', message: isAvailable ? 'Horario disponible' : 'Horario bloqueado', position: 'top-right' })
   } catch (error) {
     console.error('Error toggling availability:', error)
     $q.notify({ color: 'negative', message: 'Error al cambiar disponibilidad' })
-    await fetchBlockedSlots() // revert UI
+    await fetchBlockedSlots()
+  }
+}
+
+const blockAllDay = async () => {
+  try {
+    const times = agendaTimeSlots.value.map(s => s.time)
+    await api.post('/availability/toggle-all', {
+      date: agendaDate.value,
+      is_blocked: true,
+      times: times
+    })
+    times.forEach(t => {
+      if (!blockedSlotsForDate.value.some(b => b.start_time.substring(0,5) === t)) {
+        blockedSlotsForDate.value.push({ start_time: t + ':00', date: agendaDate.value })
+      }
+    })
+    $q.notify({ color: 'negative', message: 'Todo el día bloqueado', icon: 'block' })
+  } catch (error) {
+    console.error(error)
+    $q.notify({ color: 'negative', message: 'Error al bloquear' })
+  }
+}
+
+const unblockAllDay = async () => {
+  try {
+    await api.post('/availability/toggle-all', {
+      date: agendaDate.value,
+      is_blocked: false
+    })
+    blockedSlotsForDate.value = []
+    $q.notify({ color: 'positive', message: 'Todo el día disponible', icon: 'check_circle' })
+  } catch (error) {
+    console.error(error)
+    $q.notify({ color: 'negative', message: 'Error al liberar' })
   }
 }
 
@@ -779,6 +827,7 @@ const newApptForm = ref({
   first_name: '',
   last_name: '',
   phone: '',
+  country_code: '+52',
   appointment_date: getTodayString(),
   start_time: '10:00',
   type: 'clinico',
@@ -792,6 +841,7 @@ const openNewAppointmentDialog = async () => {
     first_name: '',
     last_name: '',
     phone: '',
+    country_code: '+52',
     appointment_date: getTodayString(),
     start_time: '10:00',
     type: 'clinico',
@@ -859,7 +909,7 @@ const submitNewAppointment = async () => {
     } else {
       payload.first_name = newApptForm.value.first_name
       payload.last_name = newApptForm.value.last_name
-      payload.phone = newApptForm.value.phone
+      payload.phone = newApptForm.value.country_code + newApptForm.value.phone
     }
 
     const response = await api.post('/appointments/admin', payload)
@@ -980,12 +1030,44 @@ function getTodayString() {
 }
 
 const kpiDateRange = ref(getTodayString())
+const kpiFilter = ref('today')
 
-const resetKpiToToday = () => {
-  kpiDateRange.value = getTodayString()
+const setKpiFilter = (mode) => {
+  kpiFilter.value = mode
+  const d = new Date()
+  const todayStr = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().split('T')[0]
+  
+  if (mode === 'today') {
+    kpiDateRange.value = todayStr
+  } else if (mode === 'week') {
+    const current = new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+    const day = current.getDay() || 7
+    const fromDate = new Date(current)
+    fromDate.setDate(current.getDate() - day + 1)
+    const toDate = new Date(fromDate)
+    toDate.setDate(fromDate.getDate() + 6)
+    
+    kpiDateRange.value = { 
+      from: fromDate.toISOString().split('T')[0], 
+      to: toDate.toISOString().split('T')[0] 
+    }
+  } else if (mode === 'month') {
+    const current = new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+    const year = current.getFullYear()
+    const month = String(current.getMonth() + 1).padStart(2, '0')
+    const lastDay = new Date(year, current.getMonth() + 1, 0).getDate()
+    kpiDateRange.value = {
+      from: `${year}-${month}-01`,
+      to: `${year}-${month}-${lastDay}`
+    }
+  }
 }
 
 const kpiDateLabel = computed(() => {
+  if (kpiFilter.value === 'today') return 'Hoy'
+  if (kpiFilter.value === 'week') return 'Esta Semana'
+  if (kpiFilter.value === 'month') return 'Este Mes'
+
   if (!kpiDateRange.value) return 'Todo el Histórico'
   if (typeof kpiDateRange.value === 'string') {
     return kpiDateRange.value === getTodayString() ? 'Hoy' : formatDateNatural(kpiDateRange.value)

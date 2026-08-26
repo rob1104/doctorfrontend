@@ -111,16 +111,6 @@
           </q-item-section>
         </q-item>
 
-        <q-item clickable tag="a" href="#/admin/medications" class="rounded-borders q-mb-sm">
-          <q-item-section avatar>
-            <q-icon name="vaccines" color="white" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>Medicamentos</q-item-label>
-            <q-item-label caption class="text-grey-5">Catálogo y Recetas</q-item-label>
-          </q-item-section>
-        </q-item>
-
         <q-item clickable tag="a" href="#/admin/cobranza" class="rounded-borders q-mb-sm">
           <q-item-section avatar>
             <q-icon name="payments" color="white" />
@@ -128,6 +118,16 @@
           <q-item-section>
             <q-item-label>Cobranza</q-item-label>
             <q-item-label caption class="text-grey-5">Pagos y Facturación</q-item-label>
+          </q-item-section>
+        </q-item>
+
+        <q-item clickable tag="a" href="#/admin/medications" class="rounded-borders q-mb-sm">
+          <q-item-section avatar>
+            <q-icon name="vaccines" color="white" />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>Medicamentos</q-item-label>
+            <q-item-label caption class="text-grey-5">Catálogo y Recetas</q-item-label>
           </q-item-section>
         </q-item>
 

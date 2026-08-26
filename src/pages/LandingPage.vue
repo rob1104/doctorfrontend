@@ -237,7 +237,10 @@
                           lazy-rules
                           :rules="[val => val && val.length > 0 || 'Requerido']"
                           :dark="$q.dark.isActive"
-                        />
+                          :bg-color="$q.dark.isActive ? 'dark' : 'grey-1'"
+                        >
+                          <template v-slot:prepend><q-icon name="person" color="primary" /></template>
+                        </q-input>
                       </div>
                       <div class="col-12 col-md-6">
                         <q-input
@@ -247,19 +250,46 @@
                           lazy-rules
                           :rules="[val => val && val.length > 0 || 'Requerido']"
                           :dark="$q.dark.isActive"
-                        />
+                          :bg-color="$q.dark.isActive ? 'dark' : 'grey-1'"
+                        >
+                          <template v-slot:prepend><q-icon name="badge" color="primary" /></template>
+                        </q-input>
                       </div>
+                      
+                      <!-- Teléfono rediseñado -->
                       <div class="col-12 col-md-6">
-                        <q-input
-                          outlined
-                          v-model="booking.phone"
-                          label="Teléfono Móvil (WhatsApp) *"
-                          type="tel"
-                          lazy-rules
-                          :rules="[val => val && val.length >= 10 || 'Requerido a 10 dígitos mínimo']"
-                          :dark="$q.dark.isActive"
-                        />
+                        <div class="row no-wrap">
+                          <q-select
+                            v-model="booking.country_code"
+                            :options="[{label:'🇲🇽 +52', value:'+52'}, {label:'🇺🇸 +1', value:'+1'}]"
+                            outlined
+                            emit-value
+                            map-options
+                            style="width: 110px"
+                            class="q-mr-sm"
+                            :dark="$q.dark.isActive"
+                            :bg-color="$q.dark.isActive ? 'dark' : 'grey-1'"
+                            @update:model-value="focusPhone"
+                          />
+                          <q-input
+                            class="col"
+                            ref="phoneInput"
+                            v-model="booking.phone"
+                            label="WhatsApp *"
+                            type="tel"
+                            outlined
+                            mask="(###) ###-####"
+                            unmasked-value
+                            lazy-rules
+                            :rules="[val => val && val.length >= 10 || '10 dígitos mínimo']"
+                            :dark="$q.dark.isActive"
+                            :bg-color="$q.dark.isActive ? 'dark' : 'grey-1'"
+                          >
+                            <template v-slot:prepend><q-icon name="whatsapp" color="positive" /></template>
+                          </q-input>
+                        </div>
                       </div>
+
                       <div class="col-12 col-md-6">
                         <q-input
                           outlined
@@ -267,7 +297,10 @@
                           label="Correo Electrónico (Opcional)"
                           type="email"
                           :dark="$q.dark.isActive"
-                        />
+                          :bg-color="$q.dark.isActive ? 'dark' : 'grey-1'"
+                        >
+                          <template v-slot:prepend><q-icon name="email" color="primary" /></template>
+                        </q-input>
                       </div>
                       <div class="col-12">
                         <div class="text-subtitle2 q-mb-sm" :class="$q.dark.isActive ? 'text-grey-4' : 'text-grey-8'">Motivo de consulta *</div>
@@ -281,6 +314,7 @@
                           :color="$q.dark.isActive ? 'grey-9' : 'grey-2'"
                           :text-color="$q.dark.isActive ? 'white' : 'dark'"
                           :options="typeOptions"
+                          class="shadow-1"
                         />
                       </div>
                       <div class="col-12">
@@ -291,7 +325,10 @@
                           label="Notas o detalles adicionales"
                           rows="3"
                           :dark="$q.dark.isActive"
-                        />
+                          :bg-color="$q.dark.isActive ? 'dark' : 'grey-1'"
+                        >
+                          <template v-slot:prepend><q-icon name="edit_note" color="primary" class="q-mt-md" /></template>
+                        </q-input>
                       </div>
                     </div>
 
@@ -331,7 +368,7 @@
           <q-avatar size="64px" color="white" text-color="primary" icon="mark_chat_read" class="q-mb-md shadow-2" />
           <div class="text-h6 text-weight-bold text-white">Verificación WhatsApp</div>
           <div class="text-body2 text-white q-mt-sm">
-            Hemos enviado un código OTP de 6 dígitos a tu WhatsApp <strong>{{ booking.phone }}</strong>.
+            Hemos enviado un código OTP de 6 dígitos a tu WhatsApp <strong>{{ booking.country_code }} {{ booking.phone }}</strong>.
           </div>
         </q-card-section>
 
@@ -369,6 +406,15 @@ const step = ref(1)
 const carouselSlide = ref('clinica')
 
 const nameInput = ref(null)
+const phoneInput = ref(null)
+
+const focusPhone = () => {
+  nextTick(() => {
+    if (phoneInput.value) {
+      phoneInput.value.focus()
+    }
+  })
+}
 
 const goToStep2 = () => {
   step.value = 2
@@ -396,6 +442,7 @@ const booking = reactive({
   time: '',
   first_name: '',
   last_name: '',
+  country_code: '+52',
   phone: '',
   email: '',
   type: 'clinico',
@@ -443,40 +490,36 @@ const fetchAvailability = async (date) => {
   }
 }
 
-// Interceptar onSubmit para mandar OTP primero
 const requestOtp = async () => {
   submitting.value = true
   try {
-    const response = await api.post('/otp/send', { phone: booking.phone })
-
-    $q.notify({ color: 'positive', message: response.data.message || 'Código enviado a tu WhatsApp.', position: 'top' })
+    const fullPhone = booking.country_code + booking.phone;
+    const response = await api.post('/otp/send', { phone: fullPhone })
+    
+    $q.notify({ color: 'positive', message: 'Código enviado por WhatsApp' })
     otpCode.value = ''
     showOtpDialog.value = true
   } catch (error) {
-    console.error('Error enviando OTP:', error)
-    $q.notify({
-      color: 'negative',
-      message: error.response?.data?.error || 'Hubo un error al enviar el código a ese número.',
-      icon: 'error'
-    })
+    const msg = error.response?.data?.error || 'Error al enviar OTP'
+    $q.notify({ color: 'negative', message: msg })
   } finally {
     submitting.value = false
   }
 }
 
-// Verificar OTP y finalizar la cita
 const verifyOtpAndBook = async () => {
-  if (!otpCode.value || otpCode.value.length < 6) {
-    $q.notify({ color: 'warning', message: 'Ingresa el código completo de 6 dígitos.' })
+  if (otpCode.value.length < 6) {
+    $q.notify({ color: 'warning', message: 'Ingresa el código de 6 dígitos' })
     return
   }
 
   verifyingOtp.value = true
   try {
+    const fullPhone = booking.country_code + booking.phone;
     const payload = {
       first_name: booking.first_name,
       last_name: booking.last_name,
-      phone: booking.phone,
+      phone: fullPhone,
       email: booking.email,
       type: booking.type,
       appointment_date: booking.date,
