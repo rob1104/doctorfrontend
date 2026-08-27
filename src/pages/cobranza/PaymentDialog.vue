@@ -1,5 +1,5 @@
 <template>
-    <q-dialog v-model="isOpen" persistent>
+    <q-dialog v-model="isOpen" persistent @show="onDialogShow">
         <q-card style="min-width: 450px; max-width: 90vw; border-radius: 12px;">
             <q-card-section class="bg-primary row items-center q-pb-md">
                 <q-avatar icon="payments" color="white" text-color="primary" size="40px" class="q-mr-md shadow-1" />
@@ -29,6 +29,7 @@
                         <div class="col-12 col-sm-7 q-pr-sm">
                             <div class="text-overline text-teal-9 text-weight-bold q-mb-xs" style="line-height: 1;">TOTAL A COBRAR</div>
                             <q-input
+                                ref="amountInputRef"
                                 v-model.number="form.amount"
                                 type="number"
                                 outlined
@@ -42,7 +43,7 @@
                                 hide-bottom-space
                             />
                         </div>
-                        
+
                         <div class="col-12 col-sm-5 flex column items-end justify-center">
                             <q-toggle
                                 v-model="form.paid"
@@ -113,7 +114,7 @@
 <script setup>
 import { ref, watch, computed } from 'vue';
 import { useQuasar } from 'quasar';
-import { api } from 'boot/axios';
+import { api } from '../../boot/axios';
 import { useCobranza } from '../../composables/useCobranza';
 
 const props = defineProps({
@@ -157,11 +158,19 @@ const isOpen = computed({
     set: (val) => emit('update:modelValue', val)
 });
 
+const amountInputRef = ref(null);
 const saving = ref(false);
+
+const onDialogShow = () => {
+    if (amountInputRef.value && !props.isReadOnly) {
+        amountInputRef.value.focus();
+        amountInputRef.value.select();
+    }
+};
 
 const form = ref({
     amount: 0,
-    paid: false,
+    paid: true,
     payment_method: null,
     comments: ''
 });
@@ -178,17 +187,32 @@ watch(() => props.consultation, async (newVal) => {
     if (newVal) {
         if (newVal.payments && newVal.payments.length > 0) {
             const payment = newVal.payments[0];
+            
+            let defaultAmount = payment.amount;
+            // Si no está pagado, intentamos cargar el precio actual configurado para sobreescribir el 500 fijo que pudo haberse guardado
+            if (!payment.paid && !props.isReadOnly) {
+                try {
+                    const { data } = await api.get('/agenda-settings');
+                    if (data && data.consultation_price !== undefined) {
+                        defaultAmount = data.consultation_price;
+                    }
+                } catch (e) {
+                    console.error("No se pudo cargar el precio por defecto", e);
+                }
+            }
+
             form.value = {
-                amount: payment.amount,
+                amount: defaultAmount,
                 payment_method: payment.payment_method,
-                paid: payment.paid,
+                paid: props.isReadOnly ? payment.paid : true,
                 comments: payment.comments || ''
             };
         } else {
+            form.value.paid = true;
             let defaultAmount = null;
             try {
                 const { data } = await api.get('/agenda-settings');
-                if (data && data.consultation_price) {
+                if (data && data.consultation_price !== undefined) {
                     defaultAmount = data.consultation_price;
                 }
             } catch (e) {
