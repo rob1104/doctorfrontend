@@ -266,11 +266,15 @@
           </div>
         </div>
 
-        <!-- VISTA: AGENDA -->
         <div v-else-if="viewMode === 'agenda'" class="agenda-view q-mt-md">
           <div class="row items-center justify-between q-mb-lg">
             <div class="row items-center">
-              <q-input v-model="agendaDate" type="date" outlined dense class="q-mr-md" />
+              <q-btn-group rounded class="q-mr-sm shadow-1 bg-white" style="height: 40px;">
+                <q-btn flat dense icon="chevron_left" color="primary" @click="changeAgendaDate(-1)" class="q-px-sm" />
+                <q-btn flat dense label="Hoy" color="primary" no-caps @click="setAgendaToToday" class="text-weight-bold q-px-sm" />
+                <q-btn flat dense icon="chevron_right" color="primary" @click="changeAgendaDate(1)" class="q-px-sm" />
+              </q-btn-group>
+              <q-input v-model="agendaDate" type="date" outlined dense class="q-mr-md" style="width: 140px; height: 40px;" />
               <div class="text-h6 text-weight-bold">Agenda del {{ formatDateNatural(agendaDate) }}</div>
             </div>
             <q-toggle v-model="editAvailabilityMode" label="Modo Edición de Disponibilidad" color="negative" />
@@ -709,6 +713,16 @@ const agendaDate = ref(new Date().toISOString().split('T')[0])
 const agendaAppointments = computed(() => {
   return appointments.value.filter(a => a.appointment_date === agendaDate.value).sort((a,b) => a.start_time.localeCompare(b.start_time))
 })
+
+const changeAgendaDate = (days) => {
+  const current = new Date(agendaDate.value + 'T12:00:00Z');
+  current.setDate(current.getDate() + days);
+  agendaDate.value = current.toISOString().split('T')[0];
+}
+
+const setAgendaToToday = () => {
+  agendaDate.value = new Date().toISOString().split('T')[0];
+}
 
 // Edit Availability Logic
 const editAvailabilityMode = ref(false)

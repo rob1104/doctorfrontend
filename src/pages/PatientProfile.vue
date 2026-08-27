@@ -273,15 +273,25 @@
 
               <!-- Lista scrolleable -->
               <q-scroll-area v-else style="height: 600px;" class="bg-grey-1 q-pa-md">
-                <div class="row q-col-gutter-md q-pb-xl">
-                  <div class="col-12" v-for="consultation in filteredConsultations" :key="consultation.id">
-                    <q-card flat bordered class="q-mb-md shadow-2 transition-ease" :style="{ backgroundColor: '#ECFAE5', borderRadius: '12px', borderLeft: consultation.is_finished ? '6px solid #4caf50' : '6px solid #ff9800' }">
+                <q-timeline color="primary" layout="dense" class="q-ml-sm q-mt-md">
+                  <q-timeline-entry
+                    v-for="consultation in filteredConsultations"
+                    :key="consultation.id"
+                    :color="consultation.is_finished ? 'primary' : 'orange-6'"
+                    :icon="consultation.is_finished ? 'check' : 'pending_actions'"
+                  >
+                    <template v-slot:title>
+                      <div class="text-subtitle1 text-weight-bold text-dark">
+                        {{ formatDate(consultation.created_at) }}
+                      </div>
+                    </template>
+                    
+                    <q-card flat bordered class="q-mb-xl shadow-2 transition-ease" :style="{ backgroundColor: '#ffffff', borderRadius: '12px', borderLeft: consultation.is_finished ? '6px solid var(--q-primary)' : '6px solid #ff9800' }">
                       <q-card-section class="q-pa-md">
-                        <!-- HEADER: Fecha y Status -->
+                        <!-- HEADER: Status -->
                         <div class="row items-center justify-between q-mb-md">
-                          <div class="text-subtitle1 text-weight-bold text-dark row items-center">
-                            <q-icon name="event_note" color="primary" class="q-mr-sm" size="sm" />
-                            {{ formatDate(consultation.created_at) }}
+                          <div class="text-subtitle2 text-grey-8 text-uppercase text-weight-bold row items-center">
+                            <q-icon name="history_edu" size="sm" class="q-mr-xs" color="grey-6" /> Ficha de Evolución
                           </div>
                           <div class="row q-gutter-sm">
                             <!-- Estatus Médico (Labels) -->
@@ -302,10 +312,16 @@
                             <div class="text-caption text-grey-6 text-uppercase text-weight-bold">Diagnóstico Clínico</div>
                             <div class="text-body2 text-dark text-weight-medium q-mb-sm">{{ consultation.diagnosis || 'Consulta General (Sin especificar)' }}</div>
 
-                            <div v-if="consultation.reason">
-                              <div class="text-caption text-grey-6 text-uppercase text-weight-bold">Motivo de Visita</div>
-                              <div class="text-body2 text-grey-8 text-truncate" style="max-height: 40px; overflow: hidden;">{{ consultation.reason }}</div>
-                            </div>
+                            <div v-if="consultation.reason" class="q-mt-sm">
+                                <div class="bg-blue-1 text-blue-9 q-pa-sm rounded-borders" style="border: 1px solid #bfdbfe;">
+                                  <div class="text-caption text-uppercase text-weight-bold q-mb-xs row items-center">
+                                    <q-icon name="format_quote" size="sm" class="q-mr-xs" /> Motivo de Visita
+                                  </div>
+                                  <div class="text-body2 text-weight-medium italic" style="line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                                    "{{ consultation.reason }}"
+                                  </div>
+                                </div>
+                              </div>
                           </div>
 
                           <div class="col-12 col-md-5">
@@ -334,8 +350,8 @@
                         </div>
                       </q-card-section>
                     </q-card>
-                  </div>
-                </div>
+                  </q-timeline-entry>
+                </q-timeline>
               </q-scroll-area>
             </q-tab-panel>
 

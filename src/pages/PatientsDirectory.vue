@@ -108,8 +108,15 @@
 
           <template v-slot:body-cell-diagnosis="props">
             <q-td :props="props">
-              <div class="text-dark text-weight-medium text-truncate" style="max-width: 180px;">
+              <div class="text-dark text-weight-medium ellipsis" style="max-width: 180px;">
                 {{ props.row.consultations && props.row.consultations.length > 0 ? (props.row.consultations[0].diagnosis || 'Sin especificar') : 'Sin consultas' }}
+                <q-tooltip 
+                  v-if="props.row.consultations && props.row.consultations.length > 0 && props.row.consultations[0].diagnosis"
+                  class="bg-dark text-body2 shadow-4"
+                  style="max-width: 300px"
+                >
+                  {{ props.row.consultations[0].diagnosis }}
+                </q-tooltip>
               </div>
               <div v-if="props.row.consultations && props.row.consultations.length > 0" class="text-caption text-grey-6">
                 {{ formatDateNatural(props.row.consultations[0].created_at) }}
