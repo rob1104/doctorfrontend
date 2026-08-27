@@ -173,6 +173,14 @@
                 </div>
               </div>
 
+              <div class="row q-col-gutter-md q-mt-xs">
+                <div class="col-12 col-md-6">
+                  <q-input v-model.number="formAgenda.consultation_price" type="number" label="Costo Base de Consulta" outlined dense color="secondary" prefix="$" :rules="[val => val >= 0 || 'El costo debe ser 0 o mayor']">
+                    <template v-slot:prepend><q-icon name="payments" /></template>
+                  </q-input>
+                </div>
+              </div>
+
               <div class="text-subtitle2 text-weight-bold q-mb-sm text-grey-8 q-mt-md">Horario de Comida / Descanso (Opcional)</div>
               <div class="row q-col-gutter-md">
                 <div class="col-12 col-md-6">
@@ -329,6 +337,7 @@ const formAgenda = ref({
   start_time: '09:00',
   end_time: '17:00',
   slot_duration: 30,
+  consultation_price: 1500,
   working_days: [],
   break_start_time: null,
   break_end_time: null
@@ -341,6 +350,7 @@ const fetchAgendaSettings = async () => {
       start_time: data.start_time ? data.start_time.substring(0, 5) : '09:00',
       end_time: data.end_time ? data.end_time.substring(0, 5) : '17:00',
       slot_duration: data.slot_duration || 30,
+      consultation_price: data.consultation_price !== undefined ? data.consultation_price : 1500,
       working_days: data.working_days || [],
       break_start_time: data.break_start_time ? data.break_start_time.substring(0, 5) : null,
       break_end_time: data.break_end_time ? data.break_end_time.substring(0, 5) : null

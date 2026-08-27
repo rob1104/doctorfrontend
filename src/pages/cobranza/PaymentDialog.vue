@@ -113,6 +113,7 @@
 <script setup>
 import { ref, watch, computed } from 'vue';
 import { useQuasar } from 'quasar';
+import { api } from 'boot/axios';
 import { useCobranza } from '../../composables/useCobranza';
 
 const props = defineProps({
@@ -173,7 +174,7 @@ const paymentMethodOptions = [
     { label: '99 Por definir', value: '99' }
 ];
 
-watch(() => props.consultation, (newVal) => {
+watch(() => props.consultation, async (newVal) => {
     if (newVal) {
         if (newVal.payments && newVal.payments.length > 0) {
             const payment = newVal.payments[0];
@@ -184,8 +185,18 @@ watch(() => props.consultation, (newVal) => {
                 comments: payment.comments || ''
             };
         } else {
+            let defaultAmount = null;
+            try {
+                const { data } = await api.get('/agenda-settings');
+                if (data && data.consultation_price) {
+                    defaultAmount = data.consultation_price;
+                }
+            } catch (e) {
+                console.error("No se pudo cargar el precio por defecto", e);
+            }
+
             form.value = {
-                amount: null,
+                amount: defaultAmount,
                 payment_method: null,
                 paid: true,
                 comments: ''
