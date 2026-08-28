@@ -6,11 +6,11 @@
                 <div class="text-subtitle1 text-grey-6 q-mt-xs">Gestión y control de pagos de consultas médicas</div>
             </div>
             <div>
-                <q-btn 
-                    unelevated 
-                    color="negative" 
-                    icon="picture_as_pdf" 
-                    label="Exportar a PDF" 
+                <q-btn
+                    unelevated
+                    color="purple"
+                    icon="picture_as_pdf"
+                    label="Exportar a PDF"
                     class="q-px-md"
                     style="border-radius: 8px;"
                     @click="downloadReportPdf"
@@ -42,7 +42,7 @@
                             <PaymentStatusBadge :status="getPaymentStatus(props.row)" />
                         </q-td>
                     </template>
-                    
+
                     <template v-slot:body-cell-payment_date="props">
                         <q-td :props="props">
                             <q-badge v-if="getPaymentDate(props.row) !== '-'" color="blue-grey-2" text-color="dark" class="q-pa-xs">
@@ -63,8 +63,8 @@
 
                     <template v-slot:body-cell-patient="props">
                         <q-td :props="props">
-                            <div 
-                                class="text-weight-bold text-primary cursor-pointer hover-underline" 
+                            <div
+                                class="text-weight-bold text-primary cursor-pointer hover-underline"
                                 @click="$router.push('/admin/patient/' + props.row.patient_id)"
                             >
                                 {{ props.row.patient?.name || props.row.patient?.first_name + ' ' + props.row.patient?.last_name }}
@@ -84,12 +84,12 @@
                             >
                                 <q-tooltip class="bg-dark">Registrar Pago</q-tooltip>
                             </q-btn>
-                            
+
                             <template v-else>
                                 <q-btn
-                                    unelevated 
-                                    round 
-                                    color="blue-1" 
+                                    unelevated
+                                    round
+                                    color="blue-1"
                                     text-color="blue-8"
                                     icon="visibility"
                                     size="sm"
@@ -97,11 +97,11 @@
                                 >
                                     <q-tooltip class="bg-dark">Ver pago</q-tooltip>
                                 </q-btn>
-                                
+
                                 <q-btn
-                                    unelevated 
-                                    round 
-                                    color="negative" 
+                                    unelevated
+                                    round
+                                    color="negative"
                                     text-color="red-1"
                                     icon="picture_as_pdf"
                                     size="sm"

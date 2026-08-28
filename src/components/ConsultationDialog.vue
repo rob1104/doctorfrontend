@@ -21,7 +21,7 @@
                 <q-card flat bordered class="q-pa-md bg-grey-1 shadow-1">
                   <div class="text-subtitle2 text-primary q-mb-sm row items-center"><q-icon name="monitor_heart" class="q-mr-xs"/> Signos Vitales (Opcional - NOM-004)</div>
                   <div class="row q-col-gutter-sm">
-                    <div class="col-6 col-sm-4"><q-input v-model="form.blood_pressure" label="TA (ej. 120/80)" outlined dense bg-color="white" /></div>
+                    <div class="col-6 col-sm-4"><q-input v-model="form.blood_pressure" label="TA (ej. 120/80)" outlined dense bg-color="white" autofocus /></div>
                     <div class="col-6 col-sm-4"><q-input v-model="form.heart_rate" label="FC (lpm)" type="number" outlined dense bg-color="white" /></div>
                     <div class="col-6 col-sm-4"><q-input v-model="form.respiratory_rate" label="FR (rpm)" type="number" outlined dense bg-color="white" /></div>
                     <div class="col-6 col-sm-4"><q-input v-model="form.temperature" label="Temp (°C)" type="number" step="0.1" outlined dense bg-color="white" /></div>
@@ -33,7 +33,7 @@
               <div class="col-12 col-md-6">
                 <q-card flat bordered class="q-pa-md bg-grey-1 shadow-1">
                   <div class="text-subtitle2 text-primary q-mb-sm row items-center"><q-icon name="assignment" class="q-mr-xs"/> Motivo de Consulta</div>
-                  <q-input v-model="form.reason" type="textarea" outlined dense autogrow rows="3" bg-color="white" autofocus />
+                  <q-input v-model="form.reason" type="textarea" outlined dense autogrow rows="3" bg-color="white" />
                 </q-card>
               </div>
               <div class="col-12 col-md-6">
@@ -99,12 +99,14 @@
                     >
                       <template v-slot:option="scope">
                         <q-item v-bind="scope.itemProps">
-                          <q-item-section>
-                            <q-item-label>{{ scope.opt.generic_name }}</q-item-label>
-                            <q-item-label caption v-if="scope.opt.commercial_name || scope.opt.presentation">
-                              {{ scope.opt.commercial_name }} {{ scope.opt.presentation }}
-                            </q-item-label>
-                          </q-item-section>
+                            <q-item-section>
+                              <q-item-label class="text-weight-bold">{{ scope.opt.generic_name }} <span v-if="scope.opt.concentration" class="text-primary">({{ scope.opt.concentration }})</span></q-item-label>
+                              <q-item-label caption v-if="scope.opt.commercial_name || scope.opt.presentation || scope.opt.route">
+                                <span v-if="scope.opt.commercial_name" class="q-mr-sm text-dark">{{ scope.opt.commercial_name }}</span> 
+                                <span v-if="scope.opt.presentation">{{ scope.opt.presentation }}</span>
+                                <span v-if="scope.opt.route" class="q-ml-sm text-italic">- {{ scope.opt.route }}</span>
+                              </q-item-label>
+                            </q-item-section>
                         </q-item>
                       </template>
                       <template v-slot:no-option>

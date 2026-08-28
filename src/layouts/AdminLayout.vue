@@ -153,7 +153,17 @@
           </q-item-section>
           <q-item-section>
             <q-item-label>Configuración</q-item-label>
-            <q-item-label caption class="text-grey-5">Formato de Recetas</q-item-label>
+            <q-item-label caption class="text-grey-5">Ajustes Generales</q-item-label>
+          </q-item-section>
+        </q-item>
+
+        <q-item clickable tag="a" href="#/admin/auditoria" class="rounded-borders q-mb-sm">
+          <q-item-section avatar>
+            <q-icon name="security" color="white" />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>Auditoría</q-item-label>
+            <q-item-label caption class="text-grey-5">Logs y Seguridad</q-item-label>
           </q-item-section>
         </q-item>
 

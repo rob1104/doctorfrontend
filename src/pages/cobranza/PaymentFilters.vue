@@ -38,7 +38,7 @@
                 </div>
 
                 <div class="col-12 col-md-3 flex items-center justify-end q-gutter-x-sm">
-                    <q-btn color="primary" icon="search" label="Buscar" @click="emitSearch" />
+                    <q-btn color="blue" icon="search" label="Buscar" @click="emitSearch" />
                     <q-btn flat color="grey-7" label="Limpiar" @click="clearFilters" />
                 </div>
             </div>
