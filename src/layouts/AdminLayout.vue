@@ -78,6 +78,7 @@
     <q-drawer
       v-model="leftDrawerOpen"
       show-if-above
+      :width="230"
       class="bg-dark text-white"
     >
       <div class="q-pa-lg text-center">
@@ -87,54 +88,50 @@
         <div class="text-weight-bold text-subtitle1">Portal Médico</div>
         <div class="text-caption text-grey-4">Dermatología</div>
       </div>
-      
+
       <q-separator dark class="q-my-md opacity-50" />
 
       <q-list class="q-px-sm">
-        <q-item clickable tag="a" href="#/admin/dashboard" class="rounded-borders q-mb-sm">
+        <q-item clickable to="/admin/dashboard" active-class="bg-primary text-white" class="rounded-borders q-mb-sm">
           <q-item-section avatar>
             <q-icon name="dashboard" color="white" />
           </q-item-section>
           <q-item-section>
             <q-item-label>Dashboard</q-item-label>
-            <q-item-label caption class="text-grey-5">Agenda y Panel</q-item-label>
           </q-item-section>
         </q-item>
-        
-        <q-item clickable tag="a" href="#/admin/patients" class="rounded-borders q-mb-sm">
+
+        <q-item clickable to="/admin/patients" active-class="bg-primary text-white" class="rounded-borders q-mb-sm">
           <q-item-section avatar>
             <q-icon name="people" color="white" />
           </q-item-section>
           <q-item-section>
             <q-item-label>Pacientes</q-item-label>
-            <q-item-label caption class="text-grey-5">Directorio y Expedientes</q-item-label>
           </q-item-section>
         </q-item>
 
-        <q-item clickable tag="a" href="#/admin/cobranza" class="rounded-borders q-mb-sm">
+        <q-item clickable to="/admin/cobranza" active-class="bg-primary text-white" class="rounded-borders q-mb-sm">
           <q-item-section avatar>
             <q-icon name="payments" color="white" />
           </q-item-section>
           <q-item-section>
             <q-item-label>Cobranza</q-item-label>
-            <q-item-label caption class="text-grey-5">Pagos y Facturación</q-item-label>
           </q-item-section>
         </q-item>
 
-        <q-item clickable tag="a" href="#/admin/medications" class="rounded-borders q-mb-sm">
+        <q-item clickable to="/admin/medications" active-class="bg-primary text-white" class="rounded-borders q-mb-sm">
           <q-item-section avatar>
             <q-icon name="vaccines" color="white" />
           </q-item-section>
           <q-item-section>
             <q-item-label>Medicamentos</q-item-label>
-            <q-item-label caption class="text-grey-5">Catálogo y Recetas</q-item-label>
           </q-item-section>
         </q-item>
 
-        <q-item 
-          clickable 
-          tag="a" 
-          href="#/admin/users" 
+        <q-item
+          clickable
+          to="/admin/users"
+          active-class="bg-primary text-white"
           class="rounded-borders q-mb-sm"
           v-if="!authStore.user || authStore.user.id === 1 || ['admin', 'administrador', 'doctor'].includes((authStore.user.role || '').toLowerCase())"
         >
@@ -143,27 +140,24 @@
           </q-item-section>
           <q-item-section>
             <q-item-label>Usuarios</q-item-label>
-            <q-item-label caption class="text-grey-5">Control de Accesos</q-item-label>
           </q-item-section>
         </q-item>
 
-        <q-item clickable tag="a" href="#/admin/settings" class="rounded-borders q-mb-sm">
+        <q-item clickable to="/admin/settings" active-class="bg-primary text-white" class="rounded-borders q-mb-sm">
           <q-item-section avatar>
             <q-icon name="settings" color="white" />
           </q-item-section>
           <q-item-section>
             <q-item-label>Configuración</q-item-label>
-            <q-item-label caption class="text-grey-5">Ajustes Generales</q-item-label>
           </q-item-section>
         </q-item>
 
-        <q-item clickable tag="a" href="#/admin/auditoria" class="rounded-borders q-mb-sm">
+        <q-item clickable to="/admin/auditoria" active-class="bg-primary text-white" class="rounded-borders q-mb-sm">
           <q-item-section avatar>
             <q-icon name="security" color="white" />
           </q-item-section>
           <q-item-section>
             <q-item-label>Auditoría</q-item-label>
-            <q-item-label caption class="text-grey-5">Logs y Seguridad</q-item-label>
           </q-item-section>
         </q-item>
 
@@ -224,7 +218,7 @@ const handleNotificationClick = async (notif, type) => {
   if (!notif.is_read) {
     await notificationsStore.markAsRead(notif.id, type)
   }
-  
+
   if (type === 'whatsapp') {
     router.push({ path: '/admin/dashboard', query: { openChat: notif.data.phone } })
   } else if (type === 'appointment') {

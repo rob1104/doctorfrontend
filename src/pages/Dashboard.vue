@@ -1512,4 +1512,52 @@ onUnmounted(() => {
   transform: translateY(-1px);
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
+
+/* 
+  Mobile First: Vista Calendario 
+  Fuerza la visualización completa de los 7 días en la pantalla del móvil sin necesidad de hacer scroll.
+*/
+@media (max-width: 768px) {
+  .calendar-view {
+    width: 100%;
+    overflow-x: hidden;
+  }
+  .calendar-grid {
+    width: 100%;
+    min-width: 100%; /* Forzar ajuste al ancho del dispositivo */
+  }
+  .calendar-header-day {
+    padding: 4px 0;
+    font-size: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: clip;
+  }
+  .calendar-cell {
+    min-height: 70px; /* Reducir altura para no ocupar demasiada pantalla vertical */
+    padding: 2px;
+  }
+  .cell-date {
+    font-size: 11px;
+    margin-bottom: 2px;
+  }
+  .calendar-cell.today .cell-date {
+    width: 18px;
+    height: 18px;
+    font-size: 10px;
+  }
+  .cell-events {
+    gap: 2px;
+  }
+  .calendar-event {
+    font-size: 8px; /* Texto miniatura para que quepa en la columna delgada */
+    padding: 2px 1px;
+    border-radius: 2px;
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: -0.2px;
+  }
+}
 </style>
