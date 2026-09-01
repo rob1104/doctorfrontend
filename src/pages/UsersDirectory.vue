@@ -21,6 +21,7 @@
         <div class="text-h6 text-weight-bold text-dark row items-center">
           <q-icon name="manage_accounts" color="primary" class="q-mr-sm" size="sm" />
           Directorio de Usuarios
+          <q-toggle v-model="showDeleted" label="Mostrar inactivos" color="negative" class="q-ml-md" size="sm" @update:model-value="fetchUsers" />
         </div>
         <q-input outlined dense hide-bottom-space v-model="filter" placeholder="Buscar por nombre, correo o rol..." class="q-ml-md bg-grey-2" style="min-width: 300px; border-radius: 8px;" borderless>
           <template v-slot:append>
@@ -47,12 +48,15 @@
 
           <template v-slot:body-cell-name="props">
             <q-td :props="props">
-              <div class="row items-center no-wrap">
-                <q-avatar size="40px" :color="getRoleColor(props.row.role)" text-color="white" class="q-mr-md shadow-1">
+              <div class="row items-center no-wrap" :class="{'opacity-50': props.row.deleted_at}">
+                <q-avatar size="40px" :color="props.row.deleted_at ? 'grey' : getRoleColor(props.row.role)" text-color="white" class="q-mr-md shadow-1">
                   {{ props.row.name.charAt(0).toUpperCase() }}
                 </q-avatar>
                 <div>
-                  <div class="text-weight-bold text-dark" style="font-size: 15px;">{{ props.row.name }}</div>
+                  <div class="text-weight-bold text-dark row items-center" style="font-size: 15px;">
+                    <span :class="{'text-strike': props.row.deleted_at}">{{ props.row.name }}</span>
+                    <q-chip v-if="props.row.deleted_at" color="negative" text-color="white" size="xs" class="q-ml-sm font-weight-bold">INACTIVO</q-chip>
+                  </div>
                   <div class="text-caption text-grey-7 row items-center">
                     <q-icon name="email" size="12px" class="q-mr-xs" /> {{ props.row.email }}
                   </div>
@@ -63,7 +67,7 @@
 
           <template v-slot:body-cell-role="props">
             <q-td :props="props">
-              <q-chip :color="getRoleColor(props.row.role)" text-color="white" size="sm" class="text-weight-bold shadow-1">
+              <q-chip :color="props.row.deleted_at ? 'grey-5' : getRoleColor(props.row.role)" text-color="white" size="sm" class="text-weight-bold shadow-1">
                 {{ props.row.role }}
               </q-chip>
             </q-td>
@@ -77,20 +81,36 @@
 
           <template v-slot:body-cell-actions="props">
             <q-td :props="props" class="q-gutter-sm text-right">
-              <q-btn
-                unelevated round color="blue-1" text-color="blue-8" icon="edit" size="sm"
-                @click="openEditDialog(props.row)"
-              >
-                <q-tooltip class="bg-dark">Editar Usuario</q-tooltip>
-              </q-btn>
-              <q-btn
-                flat round color="negative" icon="delete_outline" size="sm"
-                @click="confirmDelete(props.row)"
-                :disable="isCurrentUser(props.row.id)"
-              >
-                <q-tooltip class="bg-dark" v-if="isCurrentUser(props.row.id)">No puedes eliminarte a ti mismo</q-tooltip>
-                <q-tooltip class="bg-dark" v-else>Eliminar</q-tooltip>
-              </q-btn>
+              <template v-if="!props.row.deleted_at">
+                <q-btn
+                  unelevated round color="blue-1" text-color="blue-8" icon="edit" size="sm"
+                  @click="openEditDialog(props.row)"
+                >
+                  <q-tooltip class="bg-dark">Editar Usuario</q-tooltip>
+                </q-btn>
+                <q-btn
+                  flat round color="negative" icon="delete_outline" size="sm"
+                  @click="confirmDelete(props.row)"
+                  :disable="isCurrentUser(props.row.id)"
+                >
+                  <q-tooltip class="bg-dark" v-if="isCurrentUser(props.row.id)">No puedes eliminarte a ti mismo</q-tooltip>
+                  <q-tooltip class="bg-dark" v-else>Eliminar</q-tooltip>
+                </q-btn>
+              </template>
+              <template v-else>
+                <q-btn
+                  unelevated round color="positive" text-color="white" icon="restore" size="sm"
+                  @click="confirmRestore(props.row)"
+                >
+                  <q-tooltip class="bg-dark">Restaurar Usuario</q-tooltip>
+                </q-btn>
+                <q-btn
+                  flat round color="red-10" icon="delete_forever" size="sm"
+                  @click="confirmForceDelete(props.row)"
+                >
+                  <q-tooltip class="bg-dark">Eliminar Definitivamente</q-tooltip>
+                </q-btn>
+              </template>
             </q-td>
           </template>
         </q-table>
@@ -176,6 +196,7 @@ const formDialog = ref(false)
 const isEditing = ref(false)
 const saving = ref(false)
 const showPassword = ref(false)
+const showDeleted = ref(false)
 
 const getBaseForm = () => ({
   id: null,
@@ -225,7 +246,11 @@ const isCurrentUser = (id) => {
 const fetchUsers = async () => {
   loading.value = true
   try {
-    const { data } = await api.get('/users')
+    const { data } = await api.get('/users', {
+      params: {
+        all: showDeleted.value ? 'true' : 'false'
+      }
+    })
     users.value = data
   } catch (error) {
     const msg = error.response?.data?.message || 'Error cargando usuarios. Verifica tus permisos.'
@@ -288,6 +313,51 @@ const confirmDelete = (user) => {
       fetchUsers()
     } catch (error) {
       $q.notify({ color: 'negative', message: 'Error al eliminar usuario' })
+    }
+  })
+}
+
+const confirmRestore = (user) => {
+  $q.dialog({
+    title: 'Confirmar restauración',
+    message: `¿Estás seguro de que deseas volver a activar a ${user.name}? Recuperará su acceso al sistema.`,
+    cancel: true,
+    persistent: true,
+    ok: {
+      color: 'positive',
+      label: 'Restaurar'
+    }
+  }).onOk(async () => {
+    try {
+      await api.post(`/users/${user.id}/restore`)
+      $q.notify({ color: 'positive', message: 'Usuario restaurado correctamente' })
+      fetchUsers()
+    } catch (error) {
+      $q.notify({ color: 'negative', message: 'Error al restaurar usuario' })
+    }
+  })
+}
+
+const confirmForceDelete = (user) => {
+  if (isCurrentUser(user.id)) return
+
+  $q.dialog({
+    title: 'Confirmar eliminación permanente',
+    message: `¿Estás completamente seguro de eliminar DEFINITIVAMENTE a ${user.name}? Esta acción no se puede deshacer y borrará permanentemente sus datos de acceso.`,
+    cancel: true,
+    persistent: true,
+    ok: {
+      color: 'red-10',
+      label: 'Eliminar Definitivamente'
+    }
+  }).onOk(async () => {
+    try {
+      await api.delete(`/users/${user.id}/force`)
+      $q.notify({ color: 'positive', message: 'Usuario eliminado permanentemente' })
+      fetchUsers()
+    } catch (error) {
+      const msg = error.response?.data?.message || 'Error al eliminar usuario definitivamente'
+      $q.notify({ color: 'negative', message: msg })
     }
   })
 }

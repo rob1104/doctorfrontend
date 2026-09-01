@@ -49,7 +49,7 @@
           <template v-slot:body-cell-name="props">
             <q-td :props="props">
               <div class="row items-center no-wrap">
-                <q-avatar size="48px" class="q-mr-md shadow-1">
+                <q-avatar size="36px" class="q-mr-sm shadow-1">
                   <img :src="getAvatarUrl(props.row.gender)" />
                 </q-avatar>
                 <div>
@@ -85,26 +85,6 @@
             </q-td>
           </template>
 
-          <template v-slot:body-cell-clinical="props">
-            <q-td :props="props" class="q-gutter-xs">
-              <q-chip
-                outline
-                :color="props.row.gender === 'Femenino' ? 'pink-4' : (props.row.gender === 'Masculino' ? 'blue-6' : 'grey-6')"
-                size="sm"
-                class="text-weight-bold"
-              >
-                {{ props.row.gender || 'N/E' }}
-              </q-chip>
-              <q-chip
-                v-if="props.row.blood_type"
-                color="red-1" text-color="red-8"
-                size="sm" class="text-weight-bold"
-              >
-                <q-icon name="bloodtype" size="14px" class="q-mr-xs" />
-                {{ props.row.blood_type }}
-              </q-chip>
-            </q-td>
-          </template>
 
           <template v-slot:body-cell-diagnosis="props">
             <q-td :props="props">
@@ -138,16 +118,16 @@
             <q-td :props="props" class="text-right">
               <div class="row items-center justify-end no-wrap q-gutter-x-sm">
                 <q-btn
-                  unelevated round color="purple-1" text-color="purple-8" icon="event" size="sm"
-                  @click="openQuickAppointment(props.row)"
-                >
-                  <q-tooltip class="bg-dark">Cita Rápida</q-tooltip>
-                </q-btn>
-                <q-btn
                   unelevated round color="teal-1" text-color="teal-8" icon="folder_shared" size="sm"
                   :to="`/admin/patient/${props.row.id}`"
                 >
                   <q-tooltip class="bg-dark">Ver Expediente Clínico</q-tooltip>
+                </q-btn>
+                <q-btn
+                  unelevated round color="purple-1" text-color="purple-8" icon="event" size="sm"
+                  @click="openQuickAppointment(props.row)"
+                >
+                  <q-tooltip class="bg-dark">Cita Rápida</q-tooltip>
                 </q-btn>
                 <q-btn
                   unelevated round color="blue-1" text-color="blue-8" icon="edit" size="sm"
@@ -464,13 +444,12 @@ const stateOptions = computed(() => {
 })
 
 const columns = [
-  { name: 'name', align: 'left', label: 'Paciente', sortable: true, style: 'min-width: 250px' },
-  { name: 'age', align: 'left', label: 'Edad', sortable: true },
-  { name: 'contact', align: 'left', label: 'Contacto y Ubicación', field: 'email', sortable: false, style: 'min-width: 200px' },
-  { name: 'clinical', align: 'left', label: 'Perfil', field: 'gender', sortable: false },
-  { name: 'diagnosis', align: 'left', label: 'Últ. Diagnóstico', sortable: false, style: 'min-width: 180px' },
-  { name: 'created_at', align: 'left', label: 'Registro', field: 'created_at', sortable: true, style: 'min-width: 150px' },
-  { name: 'actions', align: 'right', label: 'Acciones', field: 'actions', style: 'min-width: 160px' }
+  { name: 'name', align: 'left', label: 'Paciente', sortable: true, style: 'min-width: 220px' },
+  { name: 'age', align: 'left', label: 'Edad', sortable: true, style: 'width: 70px' },
+  { name: 'contact', align: 'left', label: 'Contacto y Ubicación', field: 'email', sortable: false, style: 'min-width: 180px' },
+  { name: 'diagnosis', align: 'left', label: 'Últ. Diagnóstico', sortable: false, style: 'min-width: 150px' },
+  { name: 'created_at', align: 'left', label: 'Registro', field: 'created_at', sortable: true, style: 'min-width: 130px' },
+  { name: 'actions', align: 'right', label: 'Acciones', field: 'actions', style: 'min-width: 150px' }
 ]
 
 const customFilter = (rows, terms) => {
@@ -601,6 +580,16 @@ const savePatient = async () => {
 }
 
 const confirmDelete = (patient) => {
+  if (patient.consultations && patient.consultations.length > 0) {
+    $q.dialog({
+      title: 'Acción denegada',
+      message: 'No es posible eliminar un paciente que ya cuenta con consultas en su expediente clínico.',
+      color: 'warning',
+      ok: 'Entendido'
+    })
+    return
+  }
+
   $q.dialog({
     title: 'Confirmar eliminación',
     message: `¿Estás seguro de que deseas eliminar permanentemente a ${patient.first_name}? Esta acción no se puede deshacer.`,
@@ -616,7 +605,7 @@ const confirmDelete = (patient) => {
       $q.notify({ color: 'positive', message: 'Paciente eliminado' })
       fetchPatients()
     } catch (error) {
-      $q.notify({ color: 'negative', message: 'Error al eliminar paciente' })
+      $q.notify({ color: 'negative', message: error.response?.data?.message || 'Error al eliminar paciente' })
     }
   })
 }
