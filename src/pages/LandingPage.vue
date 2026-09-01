@@ -601,6 +601,7 @@ const booking = reactive({
 const availableSlots = ref([])
 const loadingSlots = ref(false)
 const submitting = ref(false)
+const requireOtpSetting = ref(true)
 
 const showOtpDialog = ref(false)
 const otpCode = ref('')
@@ -626,6 +627,9 @@ const fetchAvailability = async (date) => {
       params: { date }
     })
     availableSlots.value = response.data.available_slots
+    if (response.data.require_otp !== undefined) {
+      requireOtpSetting.value = response.data.require_otp
+    }
   } catch (error) {
     console.error('Error:', error)
     $q.notify({
@@ -643,6 +647,14 @@ const requestOtp = async () => {
   submitting.value = true
   try {
     const fullPhone = booking.country_code + booking.phone;
+    
+    if (!requireOtpSetting.value) {
+      // Bypass OTP
+      otpCode.value = '000000'
+      await performBooking(fullPhone, '')
+      return
+    }
+
     const response = await api.post('/otp/send', { phone: fullPhone })
 
     $q.notify({ color: 'positive', message: 'Código enviado por WhatsApp' })
@@ -656,15 +668,8 @@ const requestOtp = async () => {
   }
 }
 
-const verifyOtpAndBook = async () => {
-  if (otpCode.value.length < 6) {
-    $q.notify({ color: 'warning', message: 'Ingresa el código de 6 dígitos' })
-    return
-  }
-
-  verifyingOtp.value = true
+const performBooking = async (fullPhone, code) => {
   try {
-    const fullPhone = booking.country_code + booking.phone;
     const payload = {
       first_name: booking.first_name,
       last_name: booking.last_name,
@@ -674,8 +679,8 @@ const verifyOtpAndBook = async () => {
       appointment_date: booking.date,
       start_time: booking.time,
       notes: booking.notes,
-      otp_code: otpCode.value
     }
+    if (code) payload.otp_code = code
 
     await api.post('/appointments', payload)
 
@@ -696,9 +701,22 @@ const verifyOtpAndBook = async () => {
     console.error('Error verificando cita:', error)
     $q.notify({
       color: 'negative',
-      message: error.response?.data?.message || error.response?.data?.error || 'Código OTP inválido o expirado.',
+      message: error.response?.data?.message || error.response?.data?.error || 'Error al agendar la cita.',
       icon: 'error'
     })
+  }
+}
+
+const verifyOtpAndBook = async () => {
+  if (otpCode.value.length < 6) {
+    $q.notify({ color: 'warning', message: 'Ingresa el código de 6 dígitos' })
+    return
+  }
+
+  verifyingOtp.value = true
+  try {
+    const fullPhone = booking.country_code + booking.phone;
+    await performBooking(fullPhone, otpCode.value)
   } finally {
     verifyingOtp.value = false
   }

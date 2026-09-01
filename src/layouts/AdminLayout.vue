@@ -16,6 +16,16 @@
         </q-toolbar-title>
         <div class="text-grey-7 text-caption q-mr-md hidden-xs">Panel Administrativo</div>
 
+        <q-chip
+          dense
+          class="q-mr-md hidden-xs"
+          :color="botStatus === 'connected' ? 'positive' : 'negative'"
+          text-color="white"
+          :icon="botStatus === 'connected' ? 'check_circle' : 'error'"
+        >
+          Bot: {{ botStatus === 'connected' ? 'En línea' : 'Desconectado' }}
+        </q-chip>
+
         <!-- Dark Mode Toggle -->
         <q-btn flat dense round :icon="$q.dark.isActive ? 'light_mode' : 'dark_mode'" :color="$q.dark.isActive ? 'warning' : 'dark'" class="q-mr-sm" @click="toggleDarkMode" />
 
@@ -204,14 +214,29 @@ const $q = useQuasar()
 
 const leftDrawerOpen = ref(false)
 const version = import.meta.env.VITE_APP_VERSION || 'Desarrollo'
+const botStatus = ref('checking...')
+let botStatusInterval = null
+
+const checkBotStatus = async () => {
+  try {
+    const { api } = await import('../boot/axios')
+    const { data } = await api.get('/whatsapp/status')
+    botStatus.value = data.status // 'connected', 'offline', etc.
+  } catch (e) {
+    botStatus.value = 'offline'
+  }
+}
 
 onMounted(() => {
   notificationsStore.fetchNotifications()
   notificationsStore.startListening()
+  checkBotStatus()
+  botStatusInterval = setInterval(checkBotStatus, 30000) // Check every 30s
 })
 
 onUnmounted(() => {
   notificationsStore.stopListening()
+  if (botStatusInterval) clearInterval(botStatusInterval)
 })
 
 const handleNotificationClick = async (notif, type) => {

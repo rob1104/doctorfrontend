@@ -135,31 +135,33 @@
           </template>
 
           <template v-slot:body-cell-actions="props">
-            <q-td :props="props" class="q-gutter-sm text-right">
-              <q-btn
-                unelevated round color="purple-1" text-color="purple-8" icon="event" size="sm"
-                @click="openQuickAppointment(props.row)"
-              >
-                <q-tooltip class="bg-dark">Cita Rápida</q-tooltip>
-              </q-btn>
-              <q-btn
-                unelevated round color="teal-1" text-color="teal-8" icon="folder_shared" size="sm"
-                :to="`/admin/patient/${props.row.id}`"
-              >
-                <q-tooltip class="bg-dark">Ver Expediente Clínico</q-tooltip>
-              </q-btn>
-              <q-btn
-                unelevated round color="blue-1" text-color="blue-8" icon="edit" size="sm"
-                @click="openEditDialog(props.row)"
-              >
-                <q-tooltip class="bg-dark">Editar Paciente</q-tooltip>
-              </q-btn>
-              <q-btn
-                flat round color="negative" icon="delete_outline" size="sm"
-                @click="confirmDelete(props.row)"
-              >
-                <q-tooltip class="bg-dark">Eliminar</q-tooltip>
-              </q-btn>
+            <q-td :props="props" class="text-right">
+              <div class="row items-center justify-end no-wrap q-gutter-x-sm">
+                <q-btn
+                  unelevated round color="purple-1" text-color="purple-8" icon="event" size="sm"
+                  @click="openQuickAppointment(props.row)"
+                >
+                  <q-tooltip class="bg-dark">Cita Rápida</q-tooltip>
+                </q-btn>
+                <q-btn
+                  unelevated round color="teal-1" text-color="teal-8" icon="folder_shared" size="sm"
+                  :to="`/admin/patient/${props.row.id}`"
+                >
+                  <q-tooltip class="bg-dark">Ver Expediente Clínico</q-tooltip>
+                </q-btn>
+                <q-btn
+                  unelevated round color="blue-1" text-color="blue-8" icon="edit" size="sm"
+                  @click="openEditDialog(props.row)"
+                >
+                  <q-tooltip class="bg-dark">Editar Paciente</q-tooltip>
+                </q-btn>
+                <q-btn
+                  flat round color="negative" icon="delete_outline" size="sm"
+                  @click="confirmDelete(props.row)"
+                >
+                  <q-tooltip class="bg-dark">Eliminar</q-tooltip>
+                </q-btn>
+              </div>
             </q-td>
           </template>
         </q-table>
@@ -462,13 +464,13 @@ const stateOptions = computed(() => {
 })
 
 const columns = [
-  { name: 'name', align: 'left', label: 'Paciente', sortable: true },
+  { name: 'name', align: 'left', label: 'Paciente', sortable: true, style: 'min-width: 250px' },
   { name: 'age', align: 'left', label: 'Edad', sortable: true },
-  { name: 'contact', align: 'left', label: 'Contacto y Ubicación', field: 'email', sortable: false },
+  { name: 'contact', align: 'left', label: 'Contacto y Ubicación', field: 'email', sortable: false, style: 'min-width: 200px' },
   { name: 'clinical', align: 'left', label: 'Perfil', field: 'gender', sortable: false },
-  { name: 'diagnosis', align: 'left', label: 'Últ. Diagnóstico', sortable: false },
-  { name: 'created_at', align: 'left', label: 'Registro', field: 'created_at', sortable: true },
-  { name: 'actions', align: 'right', label: '', field: 'actions' }
+  { name: 'diagnosis', align: 'left', label: 'Últ. Diagnóstico', sortable: false, style: 'min-width: 180px' },
+  { name: 'created_at', align: 'left', label: 'Registro', field: 'created_at', sortable: true, style: 'min-width: 150px' },
+  { name: 'actions', align: 'right', label: 'Acciones', field: 'actions', style: 'min-width: 160px' }
 ]
 
 const customFilter = (rows, terms) => {

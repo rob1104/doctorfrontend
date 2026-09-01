@@ -179,6 +179,9 @@
                     <template v-slot:prepend><q-icon name="payments" /></template>
                   </q-input>
                 </div>
+                <div class="col-12 col-md-6">
+                  <q-toggle v-model="formAgenda.require_otp" label="Requerir OTP por WhatsApp para agendar" color="secondary" />
+                </div>
               </div>
 
               <div class="text-subtitle2 text-weight-bold q-mb-sm text-grey-8 q-mt-md">Horario de Comida / Descanso (Opcional)</div>
@@ -340,7 +343,8 @@ const formAgenda = ref({
   consultation_price: 1500,
   working_days: [],
   break_start_time: null,
-  break_end_time: null
+  break_end_time: null,
+  require_otp: true
 })
 
 const fetchAgendaSettings = async () => {
@@ -353,7 +357,8 @@ const fetchAgendaSettings = async () => {
       consultation_price: data.consultation_price !== undefined ? data.consultation_price : 1500,
       working_days: data.working_days || [],
       break_start_time: data.break_start_time ? data.break_start_time.substring(0, 5) : null,
-      break_end_time: data.break_end_time ? data.break_end_time.substring(0, 5) : null
+      break_end_time: data.break_end_time ? data.break_end_time.substring(0, 5) : null,
+      require_otp: data.require_otp !== undefined ? Boolean(data.require_otp) : true
     }
   } catch (error) {
     $q.notify({ color: 'negative', message: 'Error cargando agenda' })
