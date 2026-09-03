@@ -19,11 +19,11 @@
         <q-chip
           dense
           class="q-mr-md hidden-xs"
-          :color="botStatus === 'connected' ? 'positive' : 'negative'"
+          :color="botStatus === 'connected' ? 'positive' : (botStatus === 'qr_ready' ? 'warning' : (botStatus === 'starting' ? 'info' : 'negative'))"
           text-color="white"
-          :icon="botStatus === 'connected' ? 'check_circle' : 'error'"
+          :icon="botStatus === 'connected' ? 'check_circle' : (botStatus === 'qr_ready' ? 'qr_code_2' : (botStatus === 'starting' ? 'hourglass_empty' : 'error'))"
         >
-          Bot: {{ botStatus === 'connected' ? 'En línea' : 'Desconectado' }}
+          Bot: {{ botStatus === 'connected' ? 'En línea' : (botStatus === 'qr_ready' ? 'Escanea QR' : (botStatus === 'starting' ? 'Iniciando...' : 'Desconectado')) }}
         </q-chip>
 
         <!-- Dark Mode Toggle -->
